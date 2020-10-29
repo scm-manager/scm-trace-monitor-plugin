@@ -25,9 +25,10 @@
 import {binder} from "@scm-manager/ui-extensions";
 import { ConfigurationBinder as cfgBinder } from "@scm-manager/ui-components";
 import GlobalTraceMonitorConfiguration from "./GlobalTraceMonitorConfiguration";
+import RequestFailedEvent from "./landingpage/RequestFailedEvent";
 
 
 cfgBinder.bindGlobal("/trace-monitor", "scm-trace-monitor-plugin.global.nav-link", "traceMonitorConfig", GlobalTraceMonitorConfiguration);
 
+binder.bind("landingpage.myevents", RequestFailedEvent);
 
-binder.bind("", "");

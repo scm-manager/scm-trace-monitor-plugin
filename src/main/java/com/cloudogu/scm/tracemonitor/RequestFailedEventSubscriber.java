@@ -23,30 +23,49 @@
  */
 package com.cloudogu.scm.tracemonitor;
 
+import com.cloudogu.scm.landingpage.myevents.MyEvent;
+import com.github.legman.Subscribe;
+import lombok.Getter;
+import sonia.scm.EagerSingleton;
+import sonia.scm.event.Event;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.plugin.Extension;
-import sonia.scm.trace.Exporter;
+import sonia.scm.plugin.Requires;
 import sonia.scm.trace.SpanContext;
 
 import javax.inject.Inject;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 
 @Extension
-public class TraceExporter implements Exporter {
+@EagerSingleton
+@Requires("scm-landingpage-plugin")
+public class RequestFailedEventSubscriber {
 
-  private final TraceStore store;
   private final ScmEventBus eventBus;
 
   @Inject
-  public TraceExporter(TraceStore store, ScmEventBus eventBus) {
-    this.store = store;
+  public RequestFailedEventSubscriber(ScmEventBus eventBus) {
     this.eventBus = eventBus;
   }
 
-  @Override
-  public void export(SpanContext span) {
-    store.add(span);
-    if (span.isFailed()) {
-      eventBus.post(new RequestFailedEvent(span));
+  @Subscribe
+  public void onEvent(RequestFailedEvent event) {
+    eventBus.post(new RequestFailedMyEvent(event.getContext()));
+  }
+
+  @Event
+  @XmlAccessorType(XmlAccessType.FIELD)
+  @XmlRootElement
+  @Getter
+  public static class RequestFailedMyEvent extends MyEvent {
+
+    private final SpanContext context;
+
+    public RequestFailedMyEvent(SpanContext context) {
+      super("RequestFailedMyEvent", "traceMonitor:read");
+      this.context = context;
     }
   }
 }

@@ -23,30 +23,14 @@
  */
 package com.cloudogu.scm.tracemonitor;
 
-import sonia.scm.event.ScmEventBus;
-import sonia.scm.plugin.Extension;
-import sonia.scm.trace.Exporter;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import sonia.scm.event.Event;
 import sonia.scm.trace.SpanContext;
 
-import javax.inject.Inject;
-
-@Extension
-public class TraceExporter implements Exporter {
-
-  private final TraceStore store;
-  private final ScmEventBus eventBus;
-
-  @Inject
-  public TraceExporter(TraceStore store, ScmEventBus eventBus) {
-    this.store = store;
-    this.eventBus = eventBus;
-  }
-
-  @Override
-  public void export(SpanContext span) {
-    store.add(span);
-    if (span.isFailed()) {
-      eventBus.post(new RequestFailedEvent(span));
-    }
-  }
+@Event
+@Getter
+@AllArgsConstructor
+public class RequestFailedEvent {
+  private final SpanContext context;
 }

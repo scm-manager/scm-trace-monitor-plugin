@@ -91,12 +91,10 @@ public class TraceStore {
   @XmlAccessorType(XmlAccessType.FIELD)
   @Getter
   static class StoreEntry {
-    private EvictingQueue<SpanContext> spans;
+    private final EvictingQueue<SpanContext> spans;
 
     StoreEntry(int storeSize) {
       spans = EvictingQueue.create(storeSize);
     }
-
   }
-
 }

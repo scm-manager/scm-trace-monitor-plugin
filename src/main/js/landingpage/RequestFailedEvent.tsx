@@ -21,32 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.tracemonitor;
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
 
-import sonia.scm.event.ScmEventBus;
-import sonia.scm.plugin.Extension;
-import sonia.scm.trace.Exporter;
-import sonia.scm.trace.SpanContext;
+const RequestFailedEvent = ({ event }) => {
+  const [t] = useTranslation("plugins");
+  const link = `/admin/setting/trace-monitor`;
 
-import javax.inject.Inject;
 
-@Extension
-public class TraceExporter implements Exporter {
+  return (
+    <CardColumnSmall
+      link={link}
+      contentLeft={
+        <strong>
+          {t("scm-trace-monitor-plugin.landingpage.requestFailed.header", {
+            ...event,
+            author: <span className="has-text-info">{event.author}</span>
+          })}
+        </strong>
+      }
+      contentRight={<DateFromNow date={event.date} />}
+    />
+  );
+};
 
-  private final TraceStore store;
-  private final ScmEventBus eventBus;
+RequestFailedEvent.type = "RequestFailedMyEvent";
 
-  @Inject
-  public TraceExporter(TraceStore store, ScmEventBus eventBus) {
-    this.store = store;
-    this.eventBus = eventBus;
-  }
-
-  @Override
-  public void export(SpanContext span) {
-    store.add(span);
-    if (span.isFailed()) {
-      eventBus.post(new RequestFailedEvent(span));
-    }
-  }
-}
+export default RequestFailedEvent;

@@ -56,4 +56,13 @@
     </repository>
 
   </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>sonia.scm.plugins</groupId>
+      <artifactId>scm-landingpage-plugin</artifactId>
+      <version>1.0.0</version>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
 </project>

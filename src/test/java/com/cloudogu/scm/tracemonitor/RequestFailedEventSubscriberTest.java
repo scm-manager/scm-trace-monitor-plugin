@@ -23,30 +23,34 @@
  */
 package com.cloudogu.scm.tracemonitor;
 
+import com.google.common.collect.ImmutableMap;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.event.ScmEventBus;
-import sonia.scm.plugin.Extension;
-import sonia.scm.trace.Exporter;
 import sonia.scm.trace.SpanContext;
 
-import javax.inject.Inject;
+import java.time.Instant;
 
-@Extension
-public class TraceExporter implements Exporter {
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 
-  private final TraceStore store;
-  private final ScmEventBus eventBus;
+@ExtendWith(MockitoExtension.class)
+class RequestFailedEventSubscriberTest {
 
-  @Inject
-  public TraceExporter(TraceStore store, ScmEventBus eventBus) {
-    this.store = store;
-    this.eventBus = eventBus;
-  }
+  @Mock
+  private ScmEventBus eventBus;
 
-  @Override
-  public void export(SpanContext span) {
-    store.add(span);
-    if (span.isFailed()) {
-      eventBus.post(new RequestFailedEvent(span));
-    }
+  @InjectMocks
+  private RequestFailedEventSubscriber subscriber;
+
+  @Test
+  void shouldSendEventWithSameContext() {
+    SpanContext context = new SpanContext("Jenkins", ImmutableMap.of(), Instant.now(), Instant.now().plusMillis(100L), true);
+    subscriber.onEvent(new RequestFailedEvent(context));
+
+    verify(eventBus).post(any(RequestFailedEventSubscriber.RequestFailedMyEvent.class));
   }
 }

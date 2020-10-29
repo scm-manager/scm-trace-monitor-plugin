@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.store.InMemoryDataStore;
 import sonia.scm.store.InMemoryDataStoreFactory;
 import sonia.scm.trace.SpanContext;
@@ -38,6 +39,9 @@ import sonia.scm.trace.SpanContext;
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,6 +51,8 @@ class TraceExporterTest {
 
   @Mock
   private GlobalConfigStore globalConfigStore;
+  @Mock
+  private ScmEventBus eventBus;
   private TraceStore store;
   private TraceExporter traceExporter;
 
@@ -54,14 +60,14 @@ class TraceExporterTest {
   void initStore() {
     InMemoryDataStoreFactory factory = new InMemoryDataStoreFactory(dataStore);
     store = new TraceStore(factory, globalConfigStore);
-    traceExporter = new TraceExporter(store);
+    traceExporter = new TraceExporter(store, eventBus);
   }
 
   @Test
   void shouldAddSpanToStore() {
     when(globalConfigStore.get()).thenReturn(new GlobalConfig(42));
 
-    traceExporter.export(new SpanContext("Jenkins", ImmutableMap.of("url", "hitchhiker.org/scm"), Instant.ofEpochMilli(0L), Instant.ofEpochMilli(200L), false));
+    traceExporter.export(createSpanContext(false));
 
     assertThat(store.getAll()).isNotEmpty();
     SpanContext storedSpanContext = store.getAll().iterator().next();
@@ -70,6 +76,28 @@ class TraceExporterTest {
     assertThat(storedSpanContext.getOpened()).isEqualTo(Instant.ofEpochMilli(0L));
     assertThat(storedSpanContext.isFailed()).isFalse();
     assertThat(storedSpanContext.getLabels().values().iterator().next()).isEqualTo("hitchhiker.org/scm");
+  }
+
+  private SpanContext createSpanContext(boolean failed) {
+    return new SpanContext("Jenkins", ImmutableMap.of("url", "hitchhiker.org/scm"), Instant.ofEpochMilli(0L), Instant.ofEpochMilli(200L), failed);
+  }
+
+  @Test
+  void shouldFireRequestFailedEvent() {
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(42));
+
+    traceExporter.export(createSpanContext(true));
+
+    verify(eventBus).post(any(RequestFailedEvent.class));
+  }
+
+  @Test
+  void shouldNotFireRequestFailedEvent() {
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(42));
+
+    traceExporter.export(createSpanContext(false));
+
+    verify(eventBus, never()).post(any(RequestFailedEvent.class));
   }
 
 }
