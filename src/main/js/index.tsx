@@ -24,10 +24,10 @@
 
 import {binder} from "@scm-manager/ui-extensions";
 import { ConfigurationBinder as cfgBinder } from "@scm-manager/ui-components";
-import GlobalJiraConfiguration from "./GlobalTraceMonitorConfiguration";
+import GlobalTraceMonitorConfiguration from "./GlobalTraceMonitorConfiguration";
 
 
-cfgBinder.bindGlobal("/trace-monitor", "scm-trace-monitor-plugin.global.nav-link", "traceMonitorConfig", GlobalJiraConfiguration);
+cfgBinder.bindGlobal("/trace-monitor", "scm-trace-monitor-plugin.global.nav-link", "traceMonitorConfig", GlobalTraceMonitorConfiguration);
 
 
 binder.bind("", "");

@@ -21,9 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { Configuration, InputField } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
+
+export type Configuration = {
+  storeSize: number;
+}
 
 type Props = {
   initialConfiguration: Configuration;
@@ -33,11 +37,25 @@ type Props = {
 
 const GlobalTraceMonitorConfigurationForm: FC<Props> = ({ initialConfiguration, readOnly, onConfigurationChange }) => {
   const [t] = useTranslation("plugins");
-  const [storeSize, setStoreSize] = useState("100");
+  const [storeSize, setStoreSize] = useState<number>(initialConfiguration.storeSize);
 
+  useEffect(() => {
+    onConfigurationChange({ storeSize }, isValidConfig());
+  }, [storeSize]);
+
+  const isValidConfig = () => {
+    return storeSize !== initialConfiguration.storeSize && storeSize > 0;
+  };
   return (
     <>
-      <InputField label={t("scm-trace-monitor-plugin.config.form.storeSize")} onChange={setStoreSize} type="number" value={storeSize} />
+      <InputField
+        label={t("scm-trace-monitor-plugin.config.form.storeSize")}
+        onChange={size => setStoreSize(parseInt(size))}
+        type="number"
+        value={storeSize.toString()}
+        disabled={readOnly}
+        helpText={t("scm-trace-monitor-plugin.config.form.storeSizeHelpText")}
+      />
     </>
   );
 };

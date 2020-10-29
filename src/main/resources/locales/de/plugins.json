@@ -1,5 +1,30 @@
 {
   "scm-trace-monitor-plugin": {
-
+    "global": {
+      "title": "Trace Monitor Konfiguration",
+      "nav-link": "Trace Monitor"
+    },
+    "config": {
+      "form": {
+        "storeSize": "Anzahl der gespeicherten Anfragen je Kategorie",
+        "storeSizeHelpText": "Definiert die Anzahl der gespeicherten Anfragen je Kategorie. \nVorsicht: Eine hohe Anzahl kann zu starker Speicherauslastung führen."
+      }
+    }
+  },
+  "permissions": {
+    "configuration": {
+      "read,write": {
+        "traceMonitor": {
+          "displayName": "Globale Trace Monitor Konfiguration bearbeiten",
+          "description": "Darf die globale Trace Monitor Konfiguration bearbeiten"
+        }
+      }
+    },
+    "traceMonitor": {
+      "read": {
+        "displayName": "Trace Monitor sehen",
+        "description": "Darf den Trace Monitor sehen"
+      }
+    }
   }
 }

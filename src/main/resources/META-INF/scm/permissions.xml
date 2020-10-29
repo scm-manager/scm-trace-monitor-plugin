@@ -25,9 +25,6 @@
 -->
 <permissions>
   <permission>
-    <value>configuration:read:traceMonitor</value>
-  </permission>
-  <permission>
     <value>configuration:read,write:traceMonitor</value>
   </permission>
   <permission>
