@@ -16,14 +16,13 @@ import java.util.stream.Collectors;
 
 public class TraceStore {
 
-  private static final String STORE_NAME = "Trace-Monitor";
+  private static final String STORE_NAME = "trace-monitor";
   private final DataStoreFactory storeFactory;
 
   @Inject
   public TraceStore(DataStoreFactory storeFactory) {
     this.storeFactory = storeFactory;
   }
-
 
   public Collection<SpanContext> getAll() {
     DataStore<StoreEntry> store = createStore();
