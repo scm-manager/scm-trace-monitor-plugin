@@ -23,48 +23,35 @@
  */
 package com.cloudogu.scm.tracemonitor.config;
 
-import de.otto.edison.hal.Links;
+import com.google.inject.Provider;
 import org.apache.shiro.SecurityUtils;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import sonia.scm.api.v2.resources.BaseMapper;
+import sonia.scm.api.v2.resources.HalAppender;
+import sonia.scm.api.v2.resources.HalEnricher;
+import sonia.scm.api.v2.resources.HalEnricherContext;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
+import sonia.scm.plugin.Extension;
 
 import javax.inject.Inject;
 
-import static de.otto.edison.hal.Link.link;
-import static de.otto.edison.hal.Links.linkingTo;
+@Extension
+public class IndexLinkEnricher implements HalEnricher {
 
-@Mapper
-public abstract class ConfigurationMapper extends BaseMapper {
+  private final Provider<ScmPathInfoStore> pathInfoStore;
 
   @Inject
-  private ScmPathInfoStore scmPathInfoStore;
+  public IndexLinkEnricher(Provider<ScmPathInfoStore> pathInfoStore) {
+    this.pathInfoStore = pathInfoStore;
+  }
 
-  public abstract GlobalConfig map(GlobalConfigDto dto);
-
-  @Mapping(target = "attributes", ignore = true)
-  public abstract GlobalConfigDto map(GlobalConfig config);
-
-  @AfterMapping
-  void appendLinks(@MappingTarget GlobalConfigDto target) {
-    Links.Builder linksBuilder = linkingTo().self(self());
-    if (SecurityUtils.getSubject().isPermitted("configuration:write:traceMonitor")) {
-      linksBuilder.single(link("update", update()));
+  @Override
+  public void enrich(HalEnricherContext context, HalAppender appender) {
+    if (SecurityUtils.getSubject().isPermitted("configuration:read:traceMonitor")) {
+      String globalTraceMonitorConfigUrl = new LinkBuilder(pathInfoStore.get().get(), GlobalConfigResource.class)
+        .method("get")
+        .parameters()
+        .href();
+      appender.appendLink("traceMonitorConfig", globalTraceMonitorConfigUrl);
     }
-    target.add(linksBuilder.build());
-  }
-
-  private String self() {
-    LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get(), GlobalConfigResource.class);
-    return linkBuilder.method("get").parameters().href();
-  }
-
-  private String update() {
-    LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get(), GlobalConfigResource.class);
-    return linkBuilder.method("update").parameters().href();
   }
 }

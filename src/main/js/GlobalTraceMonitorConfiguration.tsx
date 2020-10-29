@@ -21,11 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+import React, { FC } from "react";
+import { Title, Configuration } from "@scm-manager/ui-components";
+import GlobalTraceMonitorConfigurationForm from "./GlobalTraceMonitorConfigurationForm";
+import { useTranslation } from "react-i18next";
 
-describe("frontend unit tests", () => {
+type Props = {
+  link: string;
+};
 
-  it("some test", () => {
-    expect( 21 * 2 ).toBe(42);
-  });
+const GlobalTraceMonitorConfiguration: FC<Props> = ({ link }) => {
+  const [t] = useTranslation("plugins");
 
-});
+  return (
+    <>
+      <Title title={t("scm-jira-plugin.global.title")} />
+      <Configuration link={link} t={t} render={props => <GlobalTraceMonitorConfigurationForm {...props} />} />
+    </>
+  );
+};
+
+export default GlobalTraceMonitorConfiguration;

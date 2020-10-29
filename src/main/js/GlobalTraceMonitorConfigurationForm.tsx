@@ -21,13 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+import React, { FC, useState } from "react";
+import { Configuration, InputField } from "@scm-manager/ui-components";
+import { useTranslation } from "react-i18next";
 
-import {binder} from "@scm-manager/ui-extensions";
-import { ConfigurationBinder as cfgBinder } from "@scm-manager/ui-components";
-import GlobalJiraConfiguration from "./GlobalTraceMonitorConfiguration";
+type Props = {
+  initialConfiguration: Configuration;
+  readOnly: boolean;
+  onConfigurationChange: (p1: Configuration, p2: boolean) => void;
+};
 
+const GlobalTraceMonitorConfigurationForm: FC<Props> = ({ initialConfiguration, readOnly, onConfigurationChange }) => {
+  const [t] = useTranslation("plugins");
+  const [storeSize, setStoreSize] = useState("100");
 
-cfgBinder.bindGlobal("/trace-monitor", "scm-trace-monitor-plugin.global.nav-link", "traceMonitorConfig", GlobalJiraConfiguration);
+  return (
+    <>
+      <InputField label={t("scm-trace-monitor-plugin.config.form.storeSize")} onChange={setStoreSize} type="number" value={storeSize} />
+    </>
+  );
+};
 
-
-binder.bind("", "");
+export default GlobalTraceMonitorConfigurationForm;

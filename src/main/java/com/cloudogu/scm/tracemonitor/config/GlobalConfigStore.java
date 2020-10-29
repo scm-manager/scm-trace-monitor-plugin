@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.tracemonitor.config;
 
+import org.apache.shiro.SecurityUtils;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 
@@ -41,7 +42,7 @@ public class GlobalConfigStore {
   }
 
   public GlobalConfig get() {
-    //TODO permission check
+    SecurityUtils.getSubject().checkPermission("configuration:read:traceMonitor");
     GlobalConfig globalConfig = createStore().get();
     if (globalConfig == null) {
       globalConfig = new GlobalConfig();
@@ -50,7 +51,7 @@ public class GlobalConfigStore {
   }
 
   public void update(@NotNull GlobalConfig config) {
-    //TODO permission check
+    SecurityUtils.getSubject().checkPermission("configuration:write:traceMonitor");
     createStore().set(config);
   }
 

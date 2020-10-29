@@ -23,64 +23,64 @@
  */
 package com.cloudogu.scm.tracemonitor.config;
 
+import com.google.inject.util.Providers;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.api.v2.resources.HalAppender;
+import sonia.scm.api.v2.resources.HalEnricherContext;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 
 import java.net.URI;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConfigurationMapperTest {
+class IndexLinkEnricherTest {
 
   @Mock
   private Subject subject;
-
   @Mock
   private ScmPathInfoStore scmPathInfoStore;
+  @Mock
+  private HalEnricherContext context;
+  @Mock
+  private HalAppender appender;
 
-  @InjectMocks
-  private ConfigurationMapperImpl mapper;
+  private IndexLinkEnricher enricher;
 
   @BeforeEach
-  void initSubject() {
+  void initEnricher() {
     ThreadContext.bind(subject);
+    enricher = new IndexLinkEnricher(Providers.of(scmPathInfoStore));
   }
 
   @AfterEach
-  void tearDownSubject() {
+  void tearDown() {
     ThreadContext.unbindSubject();
   }
 
   @Test
-  void shouldMapToDto() {
-    when(subject.isPermitted("configuration:write:traceMonitor")).thenReturn(false);
-    when(scmPathInfoStore.get()).thenReturn(() -> URI.create("/scm"));
-    GlobalConfigDto dto = mapper.map(new GlobalConfig(1000));
+  void shouldAppendLink() {
+    when(scmPathInfoStore.get()).thenReturn(() -> URI.create("/scm/"));
+    when(subject.isPermitted("configuration:read:traceMonitor")).thenReturn(true);
+    enricher.enrich(context, appender);
 
-    assertThat(dto.getStoreSize()).isEqualTo(1000);
-    assertThat(dto.getLinks().getLinkBy("self").get().getHref()).isEqualTo("/v2/config/trace-monitor/");
-    assertThat(dto.getLinks().getLinkBy("update")).isNotPresent();
+    verify(appender).appendLink("traceMonitorConfig", "/scm/v2/config/trace-monitor/");
   }
 
   @Test
-  void shouldMapToDtoWithUpdateLink() {
-    when(subject.isPermitted("configuration:write:traceMonitor")).thenReturn(true);
-    when(scmPathInfoStore.get()).thenReturn(() -> URI.create("/scm"));
-    GlobalConfigDto dto = mapper.map(new GlobalConfig(1000));
+  void shouldNotAppendLink() {
+    when(subject.isPermitted("configuration:read:traceMonitor")).thenReturn(false);
+    enricher.enrich(context, appender);
 
-    assertThat(dto.getStoreSize()).isEqualTo(1000);
-    assertThat(dto.getLinks().getLinkBy("self").get().getHref()).isEqualTo("/v2/config/trace-monitor/");
-    assertThat(dto.getLinks().getLinkBy("update").get().getHref()).isEqualTo("/v2/config/trace-monitor/");
+    verify(appender, never()).appendLink("traceMonitorConfig", "/scm/v2/config/trace-monitor/");
   }
-
 }

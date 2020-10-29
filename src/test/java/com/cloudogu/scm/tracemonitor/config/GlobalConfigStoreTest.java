@@ -23,20 +23,38 @@
  */
 package com.cloudogu.scm.tracemonitor.config;
 
+import org.apache.shiro.authz.AuthorizationException;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.store.InMemoryConfigurationStoreFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 
+@ExtendWith(MockitoExtension.class)
 class GlobalConfigStoreTest {
 
+  @Mock
+  private Subject subject;
   private GlobalConfigStore store;
 
   @BeforeEach
   void initStore() {
+    ThreadContext.bind(subject);
     InMemoryConfigurationStoreFactory factory = new InMemoryConfigurationStoreFactory();
     store = new GlobalConfigStore(factory);
+  }
+
+  @AfterEach
+  void tearDown() {
+    ThreadContext.unbindSubject();
   }
 
   @Test
@@ -46,10 +64,23 @@ class GlobalConfigStoreTest {
   }
 
   @Test
+  void shouldNotGetConfigWithoutPermission() {
+    doThrow(AuthorizationException.class).when(subject).checkPermission("configuration:read:traceMonitor");
+    assertThrows(AuthorizationException.class, () -> store.get());
+  }
+
+  @Test
   void shouldUpdateConfig() {
     store.update(new GlobalConfig(1337));
 
     GlobalConfig globalConfig = store.get();
     assertThat(globalConfig.getStoreSize()).isEqualTo(1337);
+  }
+
+  @Test
+  void shouldNotUpdateConfigWithoutPermission() {
+    doThrow(AuthorizationException.class).when(subject).checkPermission("configuration:write:traceMonitor");
+
+    assertThrows(AuthorizationException.class, () -> store.update(new GlobalConfig(1337)));
   }
 }
