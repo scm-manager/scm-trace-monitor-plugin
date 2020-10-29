@@ -23,10 +23,13 @@
  */
 package com.cloudogu.scm.tracemonitor;
 
+import com.cloudogu.scm.tracemonitor.config.GlobalConfig;
+import com.cloudogu.scm.tracemonitor.config.GlobalConfigStore;
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.store.InMemoryDataStore;
 import sonia.scm.store.InMemoryDataStoreFactory;
@@ -36,21 +39,27 @@ import java.time.Instant;
 import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TraceStoreTest {
 
+  @Mock
+  private GlobalConfigStore globalConfigStore;
 
   private TraceStore store;
 
   @BeforeEach
   void initStore() {
     InMemoryDataStoreFactory factory = new InMemoryDataStoreFactory(new InMemoryDataStore<>());
-    store = new TraceStore(factory);
+    store = new TraceStore(factory, globalConfigStore);
   }
 
   @Test
   void shouldAddSpan() {
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100));
+
     SpanContext spanContext = addSpanContextToStore("Jenkins", false);
 
     SpanContext storedSpan = store.get("Jenkins").iterator().next();
@@ -65,6 +74,8 @@ class TraceStoreTest {
 
   @Test
   void shouldGetAllSpans() {
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100));
+
     addSpanContextToStore("Jenkins", false);
     addSpanContextToStore("Redmine", true);
 
@@ -76,6 +87,8 @@ class TraceStoreTest {
 
   @Test
   void shouldGetSpansForKindOnly() {
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100));
+
     addSpanContextToStore("Jenkins", false);
     addSpanContextToStore("Jenkins", true);
     addSpanContextToStore("Redmine", false);
@@ -88,16 +101,58 @@ class TraceStoreTest {
 
   @Test
   void shouldOnlyStoreLimitedAmountOfSpans() {
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100));
+
     for (int i = 0; i < 1000; i++) {
       addSpanContextToStore("Jenkins", i, false);
     }
 
     Collection<SpanContext> spans = store.get("Jenkins");
 
-    //Assuming the evicting queue size is 100
     assertThat(spans).hasSize(100);
     // Should store the latest 100 entries
     assertThat(spans.stream().allMatch(s -> s.getOpened().isAfter(Instant.ofEpochMilli(899)))).isTrue();
+  }
+
+  @Test
+  void shouldStoreMaxAmountPerKind() {
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100));
+
+    for (int i = 0; i < 100; i++) {
+      addSpanContextToStore("Jenkins", i, false);
+    }
+
+    for (int i = 0; i < 100; i++) {
+      addSpanContextToStore("Redmine", i, false);
+    }
+
+    Collection<SpanContext> spans = store.getAll();
+    assertThat(spans).hasSize(200);
+  }
+
+  @Test
+  void shouldRemoveOldestEntriesFirstOnResizeStore() {
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100));
+
+    for (int i = 0; i < 100; i++) {
+      addSpanContextToStore("Jenkins", i, false);
+    }
+
+    for (int i = 0; i < 100; i++) {
+      addSpanContextToStore("Redmine", i, false);
+    }
+
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(20));
+
+    addSpanContextToStore("Jenkins", 300,false);
+
+    Collection<SpanContext> jenkinsSpans = store.get("Jenkins");
+    Collection<SpanContext> redmineSpans = store.get("Redmine");
+
+    assertThat(jenkinsSpans).hasSize(20);
+    assertThat(redmineSpans).hasSize(100);
+
+    assertThat(jenkinsSpans.stream().allMatch(s -> s.getOpened().isAfter(Instant.ofEpochMilli(80)))).isTrue();
   }
 
   private SpanContext addSpanContextToStore(String kind, long opened, boolean failed) {
@@ -109,6 +164,4 @@ class TraceStoreTest {
   private SpanContext addSpanContextToStore(String kind, boolean failed) {
     return addSpanContextToStore(kind, 0, failed);
   }
-
-
 }

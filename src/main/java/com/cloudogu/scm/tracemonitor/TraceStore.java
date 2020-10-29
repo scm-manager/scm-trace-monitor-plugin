@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.tracemonitor;
 
+import com.cloudogu.scm.tracemonitor.config.GlobalConfigStore;
 import lombok.Getter;
 import sonia.scm.store.DataStore;
 import sonia.scm.store.DataStoreFactory;
@@ -41,10 +42,12 @@ public class TraceStore {
 
   private static final String STORE_NAME = "trace-monitor";
   private final DataStoreFactory storeFactory;
+  private final GlobalConfigStore globalConfigStore;
 
   @Inject
-  public TraceStore(DataStoreFactory storeFactory) {
+  public TraceStore(DataStoreFactory storeFactory, GlobalConfigStore globalConfigStore) {
     this.storeFactory = storeFactory;
+    this.globalConfigStore = globalConfigStore;
   }
 
   public Collection<SpanContext> getAll() {
@@ -61,12 +64,23 @@ public class TraceStore {
   public void add(SpanContext spanContext) {
     DataStore<StoreEntry> store = createStore();
     StoreEntry storeEntry = store.get(spanContext.getKind());
+    int configuredStoreSize = globalConfigStore.get().getStoreSize();
     if (storeEntry == null) {
-      storeEntry = new StoreEntry();
+      storeEntry = new StoreEntry(configuredStoreSize);
     }
+    storeEntry = resizeStoreEntryMaxSize(storeEntry, configuredStoreSize);
     storeEntry.getSpans().add(spanContext);
     store.put(spanContext.getKind(), storeEntry);
 
+  }
+
+  private StoreEntry resizeStoreEntryMaxSize(StoreEntry storeEntry, int configuredStoreSize) {
+    if (storeEntry.getSpans().maxSize != configuredStoreSize) {
+      StoreEntry resizedStoreEntry = new StoreEntry(configuredStoreSize);
+      storeEntry.getSpans().forEach(s -> resizedStoreEntry.getSpans().add(s));
+      storeEntry = resizedStoreEntry;
+    }
+    return storeEntry;
   }
 
   private DataStore<StoreEntry> createStore() {
@@ -77,8 +91,12 @@ public class TraceStore {
   @XmlAccessorType(XmlAccessType.FIELD)
   @Getter
   static class StoreEntry {
-    // TODO get size from config
-    private final EvictingQueue<SpanContext> spans = EvictingQueue.create(100);
+    private EvictingQueue<SpanContext> spans;
+
+    StoreEntry(int storeSize) {
+      spans = EvictingQueue.create(storeSize);
+    }
+
   }
 
 }
