@@ -21,26 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.tracemonitor;
+package com.cloudogu.scm.tracemonitor.config;
 
-import sonia.scm.plugin.Extension;
-import sonia.scm.trace.Exporter;
-import sonia.scm.trace.SpanContext;
+import sonia.scm.store.ConfigurationStore;
+import sonia.scm.store.ConfigurationStoreFactory;
 
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
 
-@Extension
-public class TraceExporter implements Exporter {
+public class GlobalConfigStore {
 
-  private final TraceStore store;
+  private static final String STORE_NAME = "trace-monitor-config";
+
+  private final ConfigurationStoreFactory storeFactory;
 
   @Inject
-  public TraceExporter(TraceStore store) {
-    this.store = store;
+  public GlobalConfigStore(ConfigurationStoreFactory storeFactory) {
+    this.storeFactory = storeFactory;
   }
 
-  @Override
-  public void export(SpanContext span) {
-    store.add(span);
+  public GlobalConfig get() {
+    //TODO permission check
+    GlobalConfig globalConfig = createStore().get();
+    if (globalConfig == null) {
+      globalConfig = new GlobalConfig();
+    }
+    return globalConfig;
+  }
+
+  public void update(@NotNull GlobalConfig config) {
+    //TODO permission check
+    createStore().set(config);
+  }
+
+  private ConfigurationStore<GlobalConfig> createStore() {
+    return storeFactory.withType(GlobalConfig.class).withName(STORE_NAME).build();
   }
 }

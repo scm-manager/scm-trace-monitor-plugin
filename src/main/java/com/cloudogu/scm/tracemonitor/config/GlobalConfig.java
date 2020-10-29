@@ -21,26 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.tracemonitor;
+package com.cloudogu.scm.tracemonitor.config;
 
-import sonia.scm.plugin.Extension;
-import sonia.scm.trace.Exporter;
-import sonia.scm.trace.SpanContext;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.inject.Inject;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 
-@Extension
-public class TraceExporter implements Exporter {
-
-  private final TraceStore store;
-
-  @Inject
-  public TraceExporter(TraceStore store) {
-    this.store = store;
-  }
-
-  @Override
-  public void export(SpanContext span) {
-    store.add(span);
-  }
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "trace-monitor-configuration")
+public class GlobalConfig {
+  private int storeSize = 100;
 }

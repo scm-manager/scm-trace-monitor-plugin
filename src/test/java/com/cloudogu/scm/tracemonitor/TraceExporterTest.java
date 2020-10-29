@@ -1,3 +1,26 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package com.cloudogu.scm.tracemonitor;
 
 import com.google.common.collect.ImmutableMap;
@@ -18,12 +41,13 @@ class TraceExporterTest {
 
   private final InMemoryDataStore<SpanContext> dataStore = new InMemoryDataStore<>();
 
+  private TraceStore store;
   private TraceExporter traceExporter;
 
   @BeforeEach
   void initStore() {
     InMemoryDataStoreFactory factory = new InMemoryDataStoreFactory(dataStore);
-    TraceStore store = new TraceStore(factory);
+    store = new TraceStore(factory);
     traceExporter = new TraceExporter(store);
   }
 
@@ -31,8 +55,8 @@ class TraceExporterTest {
   void shouldAddSpanToStore() {
     traceExporter.export(new SpanContext("Jenkins", ImmutableMap.of("url", "hitchhiker.org/scm"), Instant.ofEpochMilli(0L), Instant.ofEpochMilli(200L), false));
 
-    assertThat(dataStore.getAll()).isNotEmpty();
-    SpanContext storedSpanContext = dataStore.getAll().values().iterator().next();
+    assertThat(store.getAll()).isNotEmpty();
+    SpanContext storedSpanContext = store.getAll().iterator().next();
     assertThat(storedSpanContext.getKind()).isEqualTo("Jenkins");
     assertThat(storedSpanContext.getClosed()).isEqualTo(Instant.ofEpochMilli(200L));
     assertThat(storedSpanContext.getOpened()).isEqualTo(Instant.ofEpochMilli(0L));

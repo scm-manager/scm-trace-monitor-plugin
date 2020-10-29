@@ -21,26 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.tracemonitor;
+package com.cloudogu.scm.tracemonitor.config;
 
-import sonia.scm.plugin.Extension;
-import sonia.scm.trace.Exporter;
-import sonia.scm.trace.SpanContext;
+import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.inject.Inject;
-
-@Extension
-public class TraceExporter implements Exporter {
-
-  private final TraceStore store;
-
-  @Inject
-  public TraceExporter(TraceStore store) {
-    this.store = store;
-  }
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@SuppressWarnings("java:S2160") // we do not need equals and hashcode in dto
+public class GlobalConfigDto extends HalRepresentation {
+  //TODO min size?
+  // @Size(min = 1)
+  private int storeSize;
 
   @Override
-  public void export(SpanContext span) {
-    store.add(span);
+  @SuppressWarnings("squid:S1185") // We want to have this method available in this package
+  protected HalRepresentation add(Links links) {
+    return super.add(links);
   }
 }

@@ -21,26 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.tracemonitor;
+package com.cloudogu.scm.tracemonitor.config;
 
-import sonia.scm.plugin.Extension;
-import sonia.scm.trace.Exporter;
-import sonia.scm.trace.SpanContext;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import sonia.scm.store.InMemoryConfigurationStoreFactory;
 
-import javax.inject.Inject;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@Extension
-public class TraceExporter implements Exporter {
+class GlobalConfigStoreTest {
 
-  private final TraceStore store;
+  private GlobalConfigStore store;
 
-  @Inject
-  public TraceExporter(TraceStore store) {
-    this.store = store;
+  @BeforeEach
+  void initStore() {
+    InMemoryConfigurationStoreFactory factory = new InMemoryConfigurationStoreFactory();
+    store = new GlobalConfigStore(factory);
   }
 
-  @Override
-  public void export(SpanContext span) {
-    store.add(span);
+  @Test
+  void shouldGetConfig() {
+    GlobalConfig globalConfig = store.get();
+    assertThat(globalConfig.getStoreSize()).isEqualTo(100);
+  }
+
+  @Test
+  void shouldUpdateConfig() {
+    store.update(new GlobalConfig(1337));
+
+    GlobalConfig globalConfig = store.get();
+    assertThat(globalConfig.getStoreSize()).isEqualTo(1337);
   }
 }
