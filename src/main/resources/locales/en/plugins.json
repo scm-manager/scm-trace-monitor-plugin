@@ -1,5 +1,6 @@
 {
   "scm-trace-monitor-plugin": {
+    "navLink": "Trace Monitor",
     "global": {
       "title": "Trace Monitor Configuration",
       "nav-link": "Trace Monitor"
@@ -9,6 +10,17 @@
         "storeSize": "Amount of stored requests per category",
         "storeSizeHelpText": "Defines how many requests will be stored per category. \nBe careful: Increasing the store size too much could cause high memory usage."
       }
+    },
+    "table": {
+      "column": {
+        "kind": "Category",
+        "status": "Result",
+        "timestamp": "Timestamp",
+        "duration": "Duration"
+      },
+      "success": "success",
+      "failed": "failed",
+      "details": "Show details"
     }
   },
   "permissions": {

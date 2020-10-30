@@ -32,8 +32,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.event.ScmEventBus;
-import sonia.scm.store.InMemoryDataStore;
-import sonia.scm.store.InMemoryDataStoreFactory;
+import sonia.scm.store.InMemoryConfigurationEntryStoreFactory;
 import sonia.scm.trace.SpanContext;
 
 import java.time.Instant;
@@ -47,8 +46,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class TraceExporterTest {
 
-  private final InMemoryDataStore<SpanContext> dataStore = new InMemoryDataStore<>();
-
   @Mock
   private GlobalConfigStore globalConfigStore;
   @Mock
@@ -58,7 +55,7 @@ class TraceExporterTest {
 
   @BeforeEach
   void initStore() {
-    InMemoryDataStoreFactory factory = new InMemoryDataStoreFactory(dataStore);
+    InMemoryConfigurationEntryStoreFactory factory = new InMemoryConfigurationEntryStoreFactory();
     store = new TraceStore(factory, globalConfigStore);
     traceExporter = new TraceExporter(store, eventBus);
   }
@@ -79,7 +76,7 @@ class TraceExporterTest {
   }
 
   private SpanContext createSpanContext(boolean failed) {
-    return new SpanContext("Jenkins", ImmutableMap.of("url", "hitchhiker.org/scm"), Instant.ofEpochMilli(0L), Instant.ofEpochMilli(200L), failed);
+    return SpanContext.create("Jenkins", ImmutableMap.of("url", "hitchhiker.org/scm"), Instant.ofEpochMilli(0L), Instant.ofEpochMilli(200L), failed);
   }
 
   @Test

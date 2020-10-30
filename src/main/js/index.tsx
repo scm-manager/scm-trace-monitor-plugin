@@ -24,11 +24,37 @@
 
 import {binder} from "@scm-manager/ui-extensions";
 import { ConfigurationBinder as cfgBinder } from "@scm-manager/ui-components";
-import GlobalTraceMonitorConfiguration from "./GlobalTraceMonitorConfiguration";
+import GlobalTraceMonitorConfiguration from "./config/GlobalTraceMonitorConfiguration";
 import RequestFailedEvent from "./landingpage/RequestFailedEvent";
+import { Route } from "react-router-dom";
+import React from "react";
+import TraceMonitorNavigation from "./TraceMonitorNavigation";
+import { Links } from "@scm-manager/ui-types";
+import TraceMonitor from "./TraceMonitor";
 
 
 cfgBinder.bindGlobal("/trace-monitor", "scm-trace-monitor-plugin.global.nav-link", "traceMonitorConfig", GlobalTraceMonitorConfiguration);
 
 binder.bind("landingpage.myevents", RequestFailedEvent);
+
+type PredicateProps = {
+  links: Links;
+};
+
+// @VisibleForTesting
+export const predicate = ({ links }: PredicateProps) => {
+  return !!(links && links.traceMonitor);
+};
+
+const TraceMonitorRoute = ({ links }) => {
+  return (
+    <>
+      <Route path="/admin/trace-monitor" component={() => <TraceMonitor link={links.traceMonitor.href} />} />
+    </>
+  );
+};
+
+binder.bind("admin.route", TraceMonitorRoute, predicate);
+
+binder.bind("admin.navigation", TraceMonitorNavigation, predicate);
 

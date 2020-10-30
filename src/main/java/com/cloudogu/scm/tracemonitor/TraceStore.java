@@ -26,13 +26,14 @@ package com.cloudogu.scm.tracemonitor;
 import com.cloudogu.scm.tracemonitor.config.GlobalConfigStore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import sonia.scm.store.ConfigurationEntryStoreFactory;
 import sonia.scm.store.DataStore;
-import sonia.scm.store.DataStoreFactory;
 import sonia.scm.trace.SpanContext;
 
 import javax.inject.Inject;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,11 +43,11 @@ import java.util.stream.Collectors;
 public class TraceStore {
 
   private static final String STORE_NAME = "trace-monitor";
-  private final DataStoreFactory storeFactory;
+  private final ConfigurationEntryStoreFactory storeFactory;
   private final GlobalConfigStore globalConfigStore;
 
   @Inject
-  public TraceStore(DataStoreFactory storeFactory, GlobalConfigStore globalConfigStore) {
+  public TraceStore(ConfigurationEntryStoreFactory storeFactory, GlobalConfigStore globalConfigStore) {
     this.storeFactory = storeFactory;
     this.globalConfigStore = globalConfigStore;
   }
@@ -93,6 +94,7 @@ public class TraceStore {
   @Getter
   @NoArgsConstructor
   static class StoreEntry {
+    @XmlElement(name = "request")
     private EvictingQueue<SpanContext> spans;
 
     StoreEntry(int storeSize) {

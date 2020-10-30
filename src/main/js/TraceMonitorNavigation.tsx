@@ -21,34 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.tracemonitor;
+import React from "react";
+import { RouteComponentProps, withRouter } from "react-router-dom";
+import { WithTranslation, withTranslation } from "react-i18next";
+import { SecondaryNavigationItem } from "@scm-manager/ui-components";
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.jupiter.api.Test;
-import sonia.scm.trace.SpanContext;
+type Props = RouteComponentProps & WithTranslation;
 
-import java.time.Instant;
+class ScriptNavigation extends React.Component<Props> {
+  matchesTraceMonitor = (route: any) => {
+    const regex = new RegExp("/admin/trace-monitor/.+");
+    return route.location.pathname.match(regex);
+  };
 
-import static org.assertj.core.api.Assertions.assertThat;
+  render() {
+    const { match, t } = this.props;
 
-class SpanContextMapperTest {
-
-  SpanContextMapper mapper = new SpanContextMapperImpl();
-
-  @Test
-  void shouldMapToDto() {
-    SpanContext spanContext = SpanContext.create(
-      "Hitchhiker",
-      ImmutableMap.of("url", "hitchhiker.org/scm"),
-      Instant.now(),
-      Instant.now().plusMillis(100L),
-      true);
-    SpanContextDto dto = mapper.map(spanContext);
-
-    assertThat(dto.getKind()).isEqualTo(spanContext.getKind());
-    assertThat(dto.getClosed()).isEqualTo(spanContext.getClosed());
-    assertThat(dto.getOpened()).isEqualTo(spanContext.getOpened());
-    assertThat(dto.getLabels()).containsEntry("url", spanContext.getLabels().get("url"));
-    assertThat(dto.getDurationInMillis()).isEqualTo(100L);
+    return (
+      <SecondaryNavigationItem
+        to={match.url + "/trace-monitor/"}
+        icon="fas fa-desktop"
+        label={t("scm-trace-monitor-plugin.navLink")}
+        title={t("scm-trace-monitor-plugin.navLink")}
+        activeWhenMatch={this.matchesTraceMonitor}
+        activeOnlyWhenExact={false}
+      />
+    );
   }
 }
+
+export default withTranslation("plugins")(withRouter(ScriptNavigation));

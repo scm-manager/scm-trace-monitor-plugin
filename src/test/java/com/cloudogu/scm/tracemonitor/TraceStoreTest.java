@@ -31,15 +31,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import sonia.scm.store.InMemoryDataStore;
-import sonia.scm.store.InMemoryDataStoreFactory;
+import sonia.scm.store.InMemoryConfigurationEntryStoreFactory;
 import sonia.scm.trace.SpanContext;
 
 import java.time.Instant;
 import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,7 +50,7 @@ class TraceStoreTest {
 
   @BeforeEach
   void initStore() {
-    InMemoryDataStoreFactory factory = new InMemoryDataStoreFactory(new InMemoryDataStore<>());
+    InMemoryConfigurationEntryStoreFactory factory = new InMemoryConfigurationEntryStoreFactory();
     store = new TraceStore(factory, globalConfigStore);
   }
 
@@ -144,7 +142,7 @@ class TraceStoreTest {
 
     when(globalConfigStore.get()).thenReturn(new GlobalConfig(20));
 
-    addSpanContextToStore("Jenkins", 300,false);
+    addSpanContextToStore("Jenkins", 300, false);
 
     Collection<SpanContext> jenkinsSpans = store.get("Jenkins");
     Collection<SpanContext> redmineSpans = store.get("Redmine");
@@ -156,7 +154,7 @@ class TraceStoreTest {
   }
 
   private SpanContext addSpanContextToStore(String kind, long opened, boolean failed) {
-    SpanContext spanContext = new SpanContext(kind, ImmutableMap.of("url", "hitchhiker.org/scm"), Instant.ofEpochMilli(opened), Instant.ofEpochMilli(200L), failed);
+    SpanContext spanContext = SpanContext.create(kind, ImmutableMap.of("url", "hitchhiker.org/scm"), Instant.ofEpochMilli(opened), Instant.ofEpochMilli(200L), failed);
     store.add(spanContext);
     return spanContext;
   }

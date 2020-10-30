@@ -38,10 +38,15 @@ import java.util.Queue;
 @XmlAccessorType(XmlAccessType.FIELD)
 public final class EvictingQueue<E> extends ForwardingQueue<E> implements Serializable {
 
-  private final ArrayDeque<E> delegate;
+  private ArrayDeque<E> delegate;
+
+  public EvictingQueue() {
+    this.delegate = new ArrayDeque<>();
+    this.maxSize = 100;
+  }
 
   @VisibleForTesting
-  final int maxSize;
+  int maxSize;
 
   private static final long serialVersionUID = 0L;
 

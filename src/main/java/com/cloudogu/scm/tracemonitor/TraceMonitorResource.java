@@ -25,6 +25,7 @@
 package com.cloudogu.scm.tracemonitor;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -40,6 +41,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -89,10 +91,17 @@ public class TraceMonitorResource {
     @DefaultValue("") @QueryParam("category") String category,
     @QueryParam("onlyFailed") boolean onlyFailed
   ) {
+    //TODO Remove -- just for testing
+    SpanContext spanContext = SpanContext.create("Jenkins", ImmutableMap.of("url", "hitchhiker.org/jenkins"), Instant.now(), Instant.now().plusMillis(200L), true);
+    SpanContext spanContext1 = SpanContext.create("Redmine", ImmutableMap.of("url", "hitchhiker.org/redmine"), Instant.now(), Instant.now().plusMillis(400L), false);
+    store.add(spanContext);
+    store.add(spanContext1);
+    //TODO Remove -- just for testing
+
     SecurityUtils.getSubject().checkPermission("traceMonitor:read");
     Collection<SpanContextDto> dtos;
 
-    if (Strings.isNullOrEmpty(category)) {
+    if (!Strings.isNullOrEmpty(category)) {
       dtos = mapSpanContextCollectionToTraceMonitorResultDto(store.get(category));
     } else {
       dtos = mapSpanContextCollectionToTraceMonitorResultDto(store.getAll());

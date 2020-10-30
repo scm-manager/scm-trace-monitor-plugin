@@ -1,5 +1,6 @@
 {
   "scm-trace-monitor-plugin": {
+    "navLink": "Trace Monitor",
     "global": {
       "title": "Trace Monitor Konfiguration",
       "nav-link": "Trace Monitor"
@@ -9,6 +10,17 @@
         "storeSize": "Anzahl der gespeicherten Anfragen je Kategorie",
         "storeSizeHelpText": "Definiert die Anzahl der gespeicherten Anfragen je Kategorie. \nVorsicht: Eine hohe Anzahl kann zu starker Speicherauslastung führen."
       }
+    },
+    "table": {
+      "column": {
+        "kind": "Kategorie",
+        "status": "Resultat",
+        "timestamp": "Zeitpunkt",
+        "duration": "Dauer"
+      },
+      "success": "erfolgreich",
+      "failed": "fehlgeschlagen",
+      "details": "Details anzeigen"
     }
   },
   "permissions": {
