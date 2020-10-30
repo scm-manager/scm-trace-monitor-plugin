@@ -25,6 +25,7 @@ package com.cloudogu.scm.tracemonitor;
 
 import com.cloudogu.scm.tracemonitor.config.GlobalConfigStore;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import sonia.scm.store.DataStore;
 import sonia.scm.store.DataStoreFactory;
 import sonia.scm.trace.SpanContext;
@@ -90,8 +91,9 @@ public class TraceStore {
   @XmlRootElement
   @XmlAccessorType(XmlAccessType.FIELD)
   @Getter
+  @NoArgsConstructor
   static class StoreEntry {
-    private final EvictingQueue<SpanContext> spans;
+    private EvictingQueue<SpanContext> spans;
 
     StoreEntry(int storeSize) {
       spans = EvictingQueue.create(storeSize);

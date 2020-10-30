@@ -21,8 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.tracemonitor.config;
+package com.cloudogu.scm.tracemonitor;
 
+import com.cloudogu.scm.tracemonitor.config.GlobalConfigResource;
 import com.google.inject.Provider;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.api.v2.resources.Enrich;
@@ -55,6 +56,13 @@ public class IndexLinkEnricher implements HalEnricher {
         .parameters()
         .href();
       appender.appendLink("traceMonitorConfig", globalTraceMonitorConfigUrl);
+    }
+    if (SecurityUtils.getSubject().isPermitted("traceMonitor:read")) {
+      String traceMonitorUrl = new LinkBuilder(pathInfoStore.get().get(), TraceMonitorResource.class)
+        .method("get")
+        .parameters()
+        .href();
+      appender.appendLink("traceMonitor", traceMonitorUrl);
     }
   }
 }

@@ -23,17 +23,24 @@
  */
 package com.cloudogu.scm.tracemonitor;
 
-import com.cloudogu.scm.tracemonitor.config.ConfigurationMapper;
-import com.google.inject.AbstractModule;
-import org.mapstruct.factory.Mappers;
-import sonia.scm.plugin.Extension;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Extension
-public class MapperModule extends AbstractModule {
+import java.time.Instant;
+import java.util.Map;
 
-  @Override
-  protected void configure() {
-    bind(ConfigurationMapper.class).to(Mappers.getMapperClass(ConfigurationMapper.class));
-    bind(SpanContextMapper.class).to(Mappers.getMapperClass(SpanContextMapper.class));
-  }
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@SuppressWarnings("java:S2160") // we do not need equals and hashcode for dto`s
+public class SpanContextDto {
+  private String kind;
+  private Map<String, String> labels;
+  private Instant opened;
+  private Instant closed;
+  private long durationInMillis;
+  private boolean failed;
 }

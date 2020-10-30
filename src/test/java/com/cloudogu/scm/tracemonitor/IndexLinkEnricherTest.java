@@ -21,8 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.tracemonitor.config;
+package com.cloudogu.scm.tracemonitor;
 
+import com.cloudogu.scm.tracemonitor.IndexLinkEnricher;
 import com.google.inject.util.Providers;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -68,7 +69,7 @@ class IndexLinkEnricherTest {
   }
 
   @Test
-  void shouldAppendLink() {
+  void shouldAppendConfigLink() {
     when(scmPathInfoStore.get()).thenReturn(() -> URI.create("/scm/"));
     when(subject.isPermitted("configuration:read:traceMonitor")).thenReturn(true);
     enricher.enrich(context, appender);
@@ -82,5 +83,15 @@ class IndexLinkEnricherTest {
     enricher.enrich(context, appender);
 
     verify(appender, never()).appendLink("traceMonitorConfig", "/scm/v2/config/trace-monitor/");
+  }
+
+  @Test
+  void shouldAppendTraceMonitorLink() {
+    when(scmPathInfoStore.get()).thenReturn(() -> URI.create("/scm/"));
+    when(subject.isPermitted("configuration:read:traceMonitor")).thenReturn(false);
+    when(subject.isPermitted("traceMonitor:read")).thenReturn(true);
+    enricher.enrich(context, appender);
+
+    verify(appender).appendLink("traceMonitor", "/scm/v2/trace-monitor/");
   }
 }

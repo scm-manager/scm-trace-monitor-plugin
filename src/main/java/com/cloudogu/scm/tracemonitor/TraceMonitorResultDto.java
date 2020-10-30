@@ -21,21 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.cloudogu.scm.tracemonitor;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import de.otto.edison.hal.HalRepresentation;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-@Path("v2/sample")
-class SampleResource {
+import java.util.Collection;
 
-  @GET
-  @Produces(MediaType.TEXT_PLAIN)
-  public String sample() {
-    return "Sample";
-  }
-
+@AllArgsConstructor
+@Getter
+@SuppressWarnings("java:S2160") // we do not need equals and hashcode for dto`s
+public class TraceMonitorResultDto extends HalRepresentation {
+  private final Collection<SpanContextDto> spans;
 }

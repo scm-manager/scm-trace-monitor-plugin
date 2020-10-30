@@ -23,17 +23,19 @@
  */
 package com.cloudogu.scm.tracemonitor;
 
-import com.cloudogu.scm.tracemonitor.config.ConfigurationMapper;
-import com.google.inject.AbstractModule;
-import org.mapstruct.factory.Mappers;
-import sonia.scm.plugin.Extension;
+import org.mapstruct.AfterMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
+import sonia.scm.api.v2.resources.BaseMapper;
+import sonia.scm.trace.SpanContext;
 
-@Extension
-public class MapperModule extends AbstractModule {
+@Mapper
+public abstract class SpanContextMapper extends BaseMapper {
 
-  @Override
-  protected void configure() {
-    bind(ConfigurationMapper.class).to(Mappers.getMapperClass(ConfigurationMapper.class));
-    bind(SpanContextMapper.class).to(Mappers.getMapperClass(SpanContextMapper.class));
+  public abstract SpanContextDto map(SpanContext context);
+
+  @AfterMapping
+  void addDuration(@MappingTarget SpanContextDto dto, SpanContext context) {
+    dto.setDurationInMillis(context.duration().toMillis());
   }
 }
