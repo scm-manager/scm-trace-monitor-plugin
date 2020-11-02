@@ -117,7 +117,7 @@ const TraceMonitorTable: FC<Props> = ({
       for (let span of spans) {
         let add = false;
         if (span.labels) {
-          add = Object.values(span.labels).some(value => value.includes(searchFilter));
+          add = Object.values(span.labels).some((value: any) => value.includes(searchFilter));
         }
         if (add) {
           filtered.push(span);

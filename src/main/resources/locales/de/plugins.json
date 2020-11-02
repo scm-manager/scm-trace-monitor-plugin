@@ -18,12 +18,12 @@
         "kind": "Kategorie",
         "status": "Resultat",
         "timestamp": "Zeitpunkt",
-        "duration": "Dauer",
-        "spanLabel": "Label"
+        "duration": "Dauer"
       },
       "success": "erfolgreich",
       "failed": "fehlgeschlagen",
-      "details": "Details anzeigen"
+      "details": "Details anzeigen",
+      "emptyMessage": "Keine Daten gefunden."
     },
     "tableActions": {
       "statusFilter": "Nur fehlgeschlagene anzeigen",

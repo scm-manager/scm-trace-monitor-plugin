@@ -41,7 +41,6 @@ type PredicateProps = {
   links: Links;
 };
 
-// @VisibleForTesting
 export const predicate = ({ links }: PredicateProps) => {
   return !!(links && links.traceMonitor);
 };

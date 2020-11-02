@@ -66,7 +66,6 @@ const SpanDetailsModal: FC<Props> = ({ onClose, modalData, active }) => {
           {Object.entries(modalData.labels).map((entry) => (
             <tr>
               <th>
-                {t("scm-trace-monitor-plugin.table.column.spanLabel") + " "}
                 {entry[0].charAt(0).toUpperCase() + entry[0].slice(1)}
               </th>
               <td>{entry[1]}</td>

@@ -37,11 +37,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.api.v2.resources.ScmPathInfo;
 import sonia.scm.trace.SpanContext;
 import sonia.scm.web.RestDispatcher;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.Optional;
@@ -166,7 +168,7 @@ class TraceMonitorResourceTest {
     dispatcher.invoke(request, response);
 
     assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
-    assertThat(response.getContentAsString()).contains("[\"Jenkins\",\"Redmine\"]");
+    assertThat(response.getContentAsString()).contains("{\"categories\":[\"Jenkins\",\"Redmine\"],\"_links\":{\"self\":{\"href\":\"/v2/trace-monitor/available-categories\"}}}");
   }
 
 

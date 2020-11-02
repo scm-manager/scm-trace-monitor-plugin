@@ -42,7 +42,7 @@ type Props = {
 
 const TraceMonitor: FC<Props> = ({ traceMonitorLink, categoriesLink }) => {
   const [spans, setSpans] = useState<Span[]>([]);
-  const [categories, setCategories] = useState<String[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [onlyFailedFilter, setOnlyFailedFilter] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -63,6 +63,7 @@ const TraceMonitor: FC<Props> = ({ traceMonitorLink, categoriesLink }) => {
     apiClient
       .get(categoriesLink)
       .then(r => r.json())
+      .then(r => r.categories)
       .then(setCategories)
       .catch(setError)
   }, [])

@@ -25,13 +25,17 @@
 package com.cloudogu.scm.tracemonitor;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
+import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import lombok.Getter;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.api.v2.resources.ErrorDto;
+import sonia.scm.api.v2.resources.LinkBuilder;
+import sonia.scm.api.v2.resources.ScmPathInfo;
 import sonia.scm.trace.SpanContext;
 import sonia.scm.web.VndMediaType;
 
@@ -41,7 +45,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import java.time.Instant;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -56,6 +60,7 @@ public class TraceMonitorResource {
 
   private final TraceStore store;
   private final SpanContextMapper mapper;
+  private final ScmPathInfo scmPathInfo = () -> URI.create("/");
 
   @Inject
   TraceMonitorResource(TraceStore store, SpanContextMapper mapper) {
@@ -94,13 +99,6 @@ public class TraceMonitorResource {
     @DefaultValue("") @QueryParam("category") String category,
     @QueryParam("onlyFailed") boolean onlyFailed
   ) {
-    //TODO Remove -- just for testing
-    SpanContext spanContext = SpanContext.create("Jenkins", ImmutableMap.of("url", "hitchhiker.org/jenkins"), Instant.now(), Instant.now().plusMillis(200L), true);
-    SpanContext spanContext1 = SpanContext.create("Redmine", ImmutableMap.of("url", "hitchhiker.org/redmine"), Instant.now(), Instant.now().plusMillis(400L), false);
-    store.add(spanContext);
-    store.add(spanContext1);
-    //TODO Remove -- just for testing
-
     SecurityUtils.getSubject().checkPermission("traceMonitor:read");
     Collection<SpanContextDto> dtos;
 
@@ -144,13 +142,15 @@ public class TraceMonitorResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public List<String> getAvailableCategories() {
+  public AvailableCategoriesDto getAvailableCategories() {
     SecurityUtils.getSubject().checkPermission("traceMonitor:read");
-    return mapSpanContextCollectionToTraceMonitorResultDto(store.getAll())
+    final String selfLink = new LinkBuilder(scmPathInfo, TraceMonitorResource.class).method("getAvailableCategories").parameters().href();
+    List<String> categories = store.getAll()
       .stream()
-      .map(SpanContextDto::getKind)
+      .map(SpanContext::getKind)
       .distinct()
       .collect(Collectors.toList());
+    return new AvailableCategoriesDto(new Links.Builder().self(selfLink).build(), categories);
   }
 
   private List<SpanContextDto> filterForFailedSpans(Collection<SpanContextDto> spanContextDtos) {
@@ -163,5 +163,16 @@ public class TraceMonitorResource {
     return spans.stream()
       .map(mapper::map)
       .collect(Collectors.toList());
+  }
+
+  @Getter
+  @SuppressWarnings("java:S2160") // wo do not need equals and hashcode for dto
+  static class AvailableCategoriesDto extends HalRepresentation {
+    private final List<String> categories;
+
+    public AvailableCategoriesDto(Links links, List<String> categories) {
+      super(links);
+      this.categories = categories;
+    }
   }
 }

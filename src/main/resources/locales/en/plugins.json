@@ -18,12 +18,12 @@
         "kind": "Category",
         "status": "Result",
         "timestamp": "Timestamp",
-        "duration": "Duration",
-        "spanLabel": "Label"
+        "duration": "Duration"
       },
       "success": "success",
       "failed": "failed",
-      "details": "Show details"
+      "details": "Show details",
+      "emptyMessage": "No requests found."
     },
     "tableActions": {
       "statusFilter": "Show only failed requests",
