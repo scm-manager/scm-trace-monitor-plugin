@@ -24,6 +24,7 @@
 package com.cloudogu.scm.tracemonitor;
 
 import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -34,4 +35,9 @@ import java.util.Collection;
 @SuppressWarnings("java:S2160") // we do not need equals and hashcode for dto`s
 public class TraceMonitorResultDto extends HalRepresentation {
   private final Collection<SpanContextDto> spans;
+
+  public TraceMonitorResultDto(Links links, Collection<SpanContextDto> spans) {
+    super(links);
+    this.spans = spans;
+  }
 }

@@ -25,6 +25,7 @@ package com.cloudogu.scm.tracemonitor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.Provider;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -34,10 +35,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import sonia.scm.api.v2.resources.ScmPathInfo;
+import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.trace.SpanContext;
 import sonia.scm.web.RestDispatcher;
 
@@ -55,6 +57,13 @@ import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class TraceMonitorResourceTest {
+
+  @Mock
+  Provider<ScmPathInfoStore> pathInfoStoreProvider;
+
+  @Mock
+  ScmPathInfoStore scmPathInfoStore;
+
 
   @Mock
   private Subject subject;
@@ -75,6 +84,8 @@ class TraceMonitorResourceTest {
     ThreadContext.bind(subject);
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(resource);
+    lenient().when(pathInfoStoreProvider.get()).thenReturn(scmPathInfoStore);
+    lenient().when(scmPathInfoStore.get()).thenReturn(() -> URI.create("hitchhiker.org/scm/"));
   }
 
   @AfterEach
@@ -145,7 +156,7 @@ class TraceMonitorResourceTest {
     dispatcher.invoke(request, response);
 
     assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
-    assertThat(response.getContentAsString()).contains("{\"spans\":[]}");
+    assertThat(response.getContentAsString()).contains("{\"spans\":[],\"_links\":{\"self\":{\"href\":\"hitchhiker.org/scm/v2/trace-monitor/\"}}}");
   }
 
   @Test
@@ -168,7 +179,7 @@ class TraceMonitorResourceTest {
     dispatcher.invoke(request, response);
 
     assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
-    assertThat(response.getContentAsString()).contains("{\"categories\":[\"Jenkins\",\"Redmine\"],\"_links\":{\"self\":{\"href\":\"/v2/trace-monitor/available-categories\"}}}");
+    assertThat(response.getContentAsString()).contains("{\"categories\":[\"Jenkins\",\"Redmine\"],\"_links\":{\"self\":{\"href\":\"hitchhiker.org/scm/v2/trace-monitor/available-categories\"}}}");
   }
 
 

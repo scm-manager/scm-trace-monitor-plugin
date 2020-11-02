@@ -30,14 +30,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.Min;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuppressWarnings("java:S2160") // we do not need equals and hashcode in dto
 public class GlobalConfigDto extends HalRepresentation {
-  //TODO min size?
-  // @Size(min = 1)
+  @Min(1)
   private int storeSize;
 
   @Override

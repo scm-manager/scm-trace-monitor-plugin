@@ -35,17 +35,17 @@ import lombok.Getter;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.api.v2.resources.LinkBuilder;
-import sonia.scm.api.v2.resources.ScmPathInfo;
+import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.trace.SpanContext;
 import sonia.scm.web.VndMediaType;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,12 +60,13 @@ public class TraceMonitorResource {
 
   private final TraceStore store;
   private final SpanContextMapper mapper;
-  private final ScmPathInfo scmPathInfo = () -> URI.create("/");
+  private final Provider<ScmPathInfoStore> scmPathInfo;
 
   @Inject
-  TraceMonitorResource(TraceStore store, SpanContextMapper mapper) {
+  TraceMonitorResource(TraceStore store, SpanContextMapper mapper, Provider<ScmPathInfoStore> pathInfoStore) {
     this.store = store;
     this.mapper = mapper;
+    this.scmPathInfo = pathInfoStore;
   }
 
   @GET
@@ -111,8 +112,8 @@ public class TraceMonitorResource {
     if (onlyFailed) {
       dtos = filterForFailedSpans(dtos);
     }
-
-    return new TraceMonitorResultDto(dtos);
+    final String selfLink = new LinkBuilder(scmPathInfo.get().get(), TraceMonitorResource.class).method("get").parameters().href();
+    return new TraceMonitorResultDto(new Links.Builder().self(selfLink).build(), dtos);
   }
 
   @GET
@@ -144,7 +145,7 @@ public class TraceMonitorResource {
   )
   public AvailableCategoriesDto getAvailableCategories() {
     SecurityUtils.getSubject().checkPermission("traceMonitor:read");
-    final String selfLink = new LinkBuilder(scmPathInfo, TraceMonitorResource.class).method("getAvailableCategories").parameters().href();
+    final String selfLink = new LinkBuilder(scmPathInfo.get().get(), TraceMonitorResource.class).method("getAvailableCategories").parameters().href();
     List<String> categories = store.getAll()
       .stream()
       .map(SpanContext::getKind)

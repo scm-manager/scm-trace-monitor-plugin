@@ -94,4 +94,16 @@ class GlobalConfigResourceTest {
     verify(mapper).map(any(GlobalConfigDto.class));
     verify(store).update(globalConfig);
   }
+
+  @Test
+  void shouldNotUpdateConfigOnInvalidStoreSize() throws URISyntaxException {
+    MockHttpRequest request = MockHttpRequest.put("/" + GlobalConfigResource.TRACE_MONITOR_CONFIG_PATH_V2)
+      .contentType(MEDIA_TYPE)
+      .content("{\"storeSize\":-1}".getBytes());
+    MockHttpResponse response = new MockHttpResponse();
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_BAD_REQUEST);
+  }
 }

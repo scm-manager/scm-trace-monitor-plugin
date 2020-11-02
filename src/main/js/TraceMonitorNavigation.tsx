@@ -26,7 +26,7 @@ import { SecondaryNavigationItem } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import { useRouteMatch } from "react-router-dom";
 
-const TraceMonitorNavigation: FC = ({}) => {
+const TraceMonitorNavigation: FC = () => {
   const [t] = useTranslation("plugins");
   const match = useRouteMatch();
 
