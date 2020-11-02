@@ -28,7 +28,8 @@ import { SecondaryNavigationItem } from "@scm-manager/ui-components";
 
 type Props = RouteComponentProps & WithTranslation;
 
-class ScriptNavigation extends React.Component<Props> {
+//TODO Change to FC
+class TraceMonitorNavigation extends React.Component<Props> {
   matchesTraceMonitor = (route: any) => {
     const regex = new RegExp("/admin/trace-monitor/.+");
     return route.location.pathname.match(regex);
@@ -50,4 +51,4 @@ class ScriptNavigation extends React.Component<Props> {
   }
 }
 
-export default withTranslation("plugins")(withRouter(ScriptNavigation));
+export default withTranslation("plugins")(withRouter(TraceMonitorNavigation));

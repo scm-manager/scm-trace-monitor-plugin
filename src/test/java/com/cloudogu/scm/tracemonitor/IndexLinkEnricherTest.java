@@ -86,12 +86,13 @@ class IndexLinkEnricherTest {
   }
 
   @Test
-  void shouldAppendTraceMonitorLink() {
+  void shouldAppendTraceMonitorLinks() {
     when(scmPathInfoStore.get()).thenReturn(() -> URI.create("/scm/"));
     when(subject.isPermitted("configuration:read:traceMonitor")).thenReturn(false);
     when(subject.isPermitted("traceMonitor:read")).thenReturn(true);
     enricher.enrich(context, appender);
 
     verify(appender).appendLink("traceMonitor", "/scm/v2/trace-monitor/");
+    verify(appender).appendLink("traceMonitorCategories", "/scm/v2/trace-monitor/available-categories");
   }
 }

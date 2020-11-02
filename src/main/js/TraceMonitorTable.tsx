@@ -38,7 +38,7 @@ import { useTranslation } from "react-i18next";
 import { Span } from "./TraceMonitor";
 import styled from "styled-components";
 import SpanDetailsModal from "./SpanDetailsModal";
-import {convertMillisToString, formatAsTimestamp} from "./table";
+import { convertMillisToString, formatAsTimestamp } from "./table";
 
 const FilterLabel = styled.span`
   color: grey;
@@ -60,6 +60,7 @@ const SpacedCheckbox = styled(Checkbox)`
 
 type Props = {
   spans: Span[];
+  categories: string[];
   categoryFilter: string;
   changeCategoryFilter: (category: string) => void;
   statusFilter: boolean;
@@ -71,7 +72,8 @@ const TraceMonitorTable: FC<Props> = ({
   statusFilter,
   changeStatusFilter,
   categoryFilter,
-  changeCategoryFilter
+  changeCategoryFilter,
+  categories
 }) => {
   const [t] = useTranslation("plugins");
   const [searchFilter, setSearchFilter] = useState("");
@@ -79,14 +81,10 @@ const TraceMonitorTable: FC<Props> = ({
   const [modalData, setModalData] = useState<Span | undefined>();
 
   const createCategoryFilterOptions = () => {
-    let categories: SelectItem[] = [];
-    categories.push({ label: t("scm-trace-monitor-plugin.tableActions.all"), value: "ALL" });
-    for (let span of spans) {
-      if (!categories.some(s => s.value === span.kind)) {
-        categories.push({ label: span.kind, value: span.kind });
-      }
-    }
-    return categories;
+    let filterCategories: SelectItem[] = [];
+    filterCategories.push({ label: t("scm-trace-monitor-plugin.tableActions.all"), value: "ALL" });
+    categories.forEach(category => filterCategories.push({ label: category, value: category }));
+    return filterCategories;
   };
 
   const tableActions = (

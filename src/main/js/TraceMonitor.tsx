@@ -36,11 +36,13 @@ export type Span = {
 };
 
 type Props = {
-  link: string;
+  traceMonitorLink: string;
+  categoriesLink: string;
 };
 
-const TraceMonitor: FC<Props> = ({ link }) => {
+const TraceMonitor: FC<Props> = ({ traceMonitorLink, categoriesLink }) => {
   const [spans, setSpans] = useState<Span[]>([]);
+  const [categories, setCategories] = useState<String[]>([]);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [onlyFailedFilter, setOnlyFailedFilter] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -57,8 +59,16 @@ const TraceMonitor: FC<Props> = ({ link }) => {
       .catch(setError);
   }, [categoryFilter, onlyFailedFilter]);
 
+  useEffect(() => {
+    apiClient
+      .get(categoriesLink)
+      .then(r => r.json())
+      .then(setCategories)
+      .catch(setError)
+  }, [])
+
   const createUrl = () => {
-    let url = link;
+    let url = traceMonitorLink;
     if (!categoryFilter && !onlyFailedFilter) {
       return url;
     }
@@ -95,6 +105,7 @@ const TraceMonitor: FC<Props> = ({ link }) => {
         changeCategoryFilter={setCategoryFilter}
         statusFilter={onlyFailedFilter}
         changeStatusFilter={setOnlyFailedFilter}
+        categories={categories}
       />
     </>
   );

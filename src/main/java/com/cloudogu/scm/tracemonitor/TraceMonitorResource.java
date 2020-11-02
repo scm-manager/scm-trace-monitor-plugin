@@ -46,9 +46,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Path("v2/trace-monitor/")
+import static com.cloudogu.scm.tracemonitor.TraceMonitorResource.TRACE_MONITOR_PATH;
+
+@Path(TRACE_MONITOR_PATH)
 public class TraceMonitorResource {
 
+  static final String TRACE_MONITOR_PATH = "v2/trace-monitor/";
   static final String TRACE_MONITOR_MEDIA_TYPE = VndMediaType.PREFIX + "trace-monitor" + VndMediaType.SUFFIX;
 
   private final TraceStore store;
@@ -112,6 +115,42 @@ public class TraceMonitorResource {
     }
 
     return new TraceMonitorResultDto(dtos);
+  }
+
+  @GET
+  @Produces(TRACE_MONITOR_MEDIA_TYPE)
+  @Path("available-categories")
+  @Operation(
+    summary = "Trace monitor categories",
+    description = "Returns a list of the trace monitor categories.",
+    tags = "Trace Monitor",
+    operationId = "trace_monitor_get_categories"
+  )
+  @ApiResponse(
+    responseCode = "200",
+    description = "success",
+    content = @Content(
+      mediaType = TRACE_MONITOR_MEDIA_TYPE,
+      schema = @Schema(implementation = List.class)
+    )
+  )
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"traceMonitor:read\" privilege")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
+  public List<String> getAvailableCategories() {
+    SecurityUtils.getSubject().checkPermission("traceMonitor:read");
+    return mapSpanContextCollectionToTraceMonitorResultDto(store.getAll())
+      .stream()
+      .map(SpanContextDto::getKind)
+      .distinct()
+      .collect(Collectors.toList());
   }
 
   private List<SpanContextDto> filterForFailedSpans(Collection<SpanContextDto> spanContextDtos) {
