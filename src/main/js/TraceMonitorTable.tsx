@@ -1,31 +1,145 @@
-import React, { FC } from "react";
-import { Column, comparators, Icon, Table, TextColumn } from "@scm-manager/ui-components";
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+import React, { FC, useState } from "react";
+import {
+  Column,
+  comparators,
+  Icon,
+  Table,
+  TextColumn,
+  Checkbox,
+  Level,
+  Select,
+  SelectItem,
+  FilterInput
+} from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import { Span } from "./TraceMonitor";
-import { format } from "date-fns";
+import styled from "styled-components";
+import SpanDetailsModal from "./SpanDetailsModal";
+import {convertMillisToString, formatAsTimestamp} from "./table";
+
+const FilterLabel = styled.span`
+  color: grey;
+  margin: 0 1rem;
+`;
+
+const LevelLeft = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  .field:not(:last-child) {
+    margin-bottom: 0;
+  }
+`;
+
+const SpacedCheckbox = styled(Checkbox)`
+  margin-right: 1rem;
+`;
 
 type Props = {
   spans: Span[];
+  categoryFilter: string;
   changeCategoryFilter: (category: string) => void;
+  statusFilter: boolean;
   changeStatusFilter: (status: boolean) => void;
 };
 
-const TraceMonitorTable: FC<Props> = ({ spans }) => {
+const TraceMonitorTable: FC<Props> = ({
+  spans,
+  statusFilter,
+  changeStatusFilter,
+  categoryFilter,
+  changeCategoryFilter
+}) => {
   const [t] = useTranslation("plugins");
+  const [searchFilter, setSearchFilter] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [modalData, setModalData] = useState<Span | undefined>();
 
-  const convertMillisToString = (ms: number) => {
-    const showWith0 = (value: number) => (value < 10 ? `0${value}` : value);
-    const minutes = showWith0(Math.floor((ms / (1000 * 60)) % 60));
-    const seconds = showWith0(Math.floor((ms / 1000) % 60));
-    const millis = showWith0(Math.floor(ms % 1000));
-    return `${minutes} m ${seconds} s ${millis} ms`;
+  const createCategoryFilterOptions = () => {
+    let categories: SelectItem[] = [];
+    categories.push({ label: t("scm-trace-monitor-plugin.tableActions.all"), value: "ALL" });
+    for (let span of spans) {
+      if (!categories.some(s => s.value === span.kind)) {
+        categories.push({ label: span.kind, value: span.kind });
+      }
+    }
+    return categories;
   };
 
-  const openModal = (span: Span) => {};
+  const tableActions = (
+    <Level
+      left={
+        <LevelLeft>
+          <SpacedCheckbox
+            checked={statusFilter}
+            label={t("scm-trace-monitor-plugin.tableActions.statusFilter")}
+            onChange={changeStatusFilter}
+          />
+          <>
+            <FilterLabel>{t("scm-trace-monitor-plugin.tableActions.categoryFilter")}</FilterLabel>
+            <Select value={categoryFilter} options={createCategoryFilterOptions()} onChange={changeCategoryFilter} />
+          </>
+        </LevelLeft>
+      }
+      right={
+        <>
+          <FilterLabel>{t("scm-trace-monitor-plugin.tableActions.searchFilter")}</FilterLabel>
+          <FilterInput value={searchFilter} filter={setSearchFilter} placeholder="" />
+        </>
+      }
+    />
+  );
+
+  const filteredSpans = () => {
+    if (searchFilter) {
+      let filtered: Span[] = [];
+      for (let span of spans) {
+        let add = false;
+        if (span.labels) {
+          add = Object.values(span.labels).some(value => value.includes(searchFilter));
+        }
+        if (add) {
+          filtered.push(span);
+        }
+      }
+      return filtered;
+    }
+    return spans;
+  };
+
+  const openModal = (span: Span) => {
+    setModalData(span);
+    setShowModal(true);
+  };
 
   return (
     <>
-      <Table data={spans} emptyMessage={t("scm-trace-monitor-plugin.table.emptyMessage")}>
+      {showModal && <SpanDetailsModal onClose={() => setShowModal(false)} modalData={modalData} active={showModal} />}
+      {tableActions}
+      <Table data={filteredSpans()} emptyMessage={t("scm-trace-monitor-plugin.table.emptyMessage")}>
         <TextColumn header={t("scm-trace-monitor-plugin.table.column.kind")} dataKey="kind" />
         <Column
           header={t("scm-trace-monitor-plugin.table.column.status")}
@@ -41,7 +155,7 @@ const TraceMonitorTable: FC<Props> = ({ spans }) => {
               </>
             ) : (
               <>
-                <Icon color="success" name="check-circle" />
+                <Icon color="success" name="check-circle" iconStyle="far" />
                 {" " + t("scm-trace-monitor-plugin.table.success")}
               </>
             )
@@ -53,7 +167,7 @@ const TraceMonitorTable: FC<Props> = ({ spans }) => {
           ascendingIcon="sort"
           descendingIcon="sort"
         >
-          {row => format(new Date(row.closed), "yyyy-MM-dd HH:mm:ss")}
+          {row => formatAsTimestamp(row)}
         </Column>
         <Column
           header={t("scm-trace-monitor-plugin.table.column.duration")}

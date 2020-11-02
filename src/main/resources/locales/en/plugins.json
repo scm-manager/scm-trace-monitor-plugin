@@ -1,5 +1,7 @@
 {
   "scm-trace-monitor-plugin": {
+    "title": "Administration",
+    "subtitle": "Trace Monitor",
     "navLink": "Trace Monitor",
     "global": {
       "title": "Trace Monitor Configuration",
@@ -16,11 +18,21 @@
         "kind": "Category",
         "status": "Result",
         "timestamp": "Timestamp",
-        "duration": "Duration"
+        "duration": "Duration",
+        "spanLabel": "Label"
       },
       "success": "success",
       "failed": "failed",
       "details": "Show details"
+    },
+    "tableActions": {
+      "statusFilter": "Show only failed requests",
+      "categoryFilter": "Filter Categories",
+      "searchFilter": "Search for Label",
+      "all": "All"
+    },
+    "modal": {
+      "title": "Request Details"
     }
   },
   "permissions": {

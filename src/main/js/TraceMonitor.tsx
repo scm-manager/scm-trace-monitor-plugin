@@ -22,8 +22,9 @@
  * SOFTWARE.
  */
 import React, { FC, useEffect, useState } from "react";
-import { apiClient, ErrorNotification, Loading } from "@scm-manager/ui-components";
+import { apiClient, ErrorNotification, Loading, Title, Subtitle } from "@scm-manager/ui-components";
 import TraceMonitorTable from "./TraceMonitorTable";
+import { useTranslation } from "react-i18next";
 
 export type Span = {
   kind: string;
@@ -44,6 +45,7 @@ const TraceMonitor: FC<Props> = ({ link }) => {
   const [onlyFailedFilter, setOnlyFailedFilter] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | undefined>();
+  const [t] = useTranslation("plugins");
 
   useEffect(() => {
     apiClient
@@ -62,7 +64,7 @@ const TraceMonitor: FC<Props> = ({ link }) => {
     }
 
     url += `?`;
-    if (categoryFilter) {
+    if (categoryFilter && categoryFilter !== "ALL") {
       url += `category=${categoryFilter}`;
     }
     if (onlyFailedFilter) {
@@ -84,11 +86,17 @@ const TraceMonitor: FC<Props> = ({ link }) => {
   }
 
   return (
-    <TraceMonitorTable
-      spans={spans}
-      changeCategoryFilter={setCategoryFilter}
-      changeStatusFilter={setOnlyFailedFilter}
-    />
+    <>
+      <Title title={t("scm-trace-monitor-plugin.title")} />
+      <Subtitle subtitle={t("scm-trace-monitor-plugin.subtitle")} />
+      <TraceMonitorTable
+        spans={spans}
+        categoryFilter={categoryFilter}
+        changeCategoryFilter={setCategoryFilter}
+        statusFilter={onlyFailedFilter}
+        changeStatusFilter={setOnlyFailedFilter}
+      />
+    </>
   );
 };
 
