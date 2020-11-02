@@ -29,7 +29,6 @@ import {
   Table,
   TextColumn,
   Checkbox,
-  Level,
   Select,
   SelectItem,
   FilterInput
@@ -41,21 +40,24 @@ import SpanDetailsModal from "./SpanDetailsModal";
 import { convertMillisToString, formatAsTimestamp } from "./table";
 
 const FilterLabel = styled.span`
-  color: grey;
-  margin: 0 1rem;
+  color: #9a9a9a;
+  margin: 0 0.5rem;
+  word-break: keep-all;
 `;
 
-const LevelLeft = styled.div`
+const Level = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
+const TableActions = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   .field:not(:last-child) {
     margin-bottom: 0;
   }
-`;
-
-const SpacedCheckbox = styled(Checkbox)`
-  margin-right: 1rem;
 `;
 
 type Props = {
@@ -88,27 +90,27 @@ const TraceMonitorTable: FC<Props> = ({
   };
 
   const tableActions = (
-    <Level
-      left={
-        <LevelLeft>
-          <SpacedCheckbox
-            checked={statusFilter}
-            label={t("scm-trace-monitor-plugin.tableActions.statusFilter")}
-            onChange={changeStatusFilter}
-          />
-          <>
-            <FilterLabel>{t("scm-trace-monitor-plugin.tableActions.categoryFilter")}</FilterLabel>
-            <Select value={categoryFilter} options={createCategoryFilterOptions()} onChange={changeCategoryFilter} />
-          </>
-        </LevelLeft>
-      }
-      right={
-        <>
+    <TableActions className="columns column is-mobile-action-spacing is-clipped">
+      <div className="column is-flex">
+        <Checkbox
+          checked={statusFilter}
+          label={t("scm-trace-monitor-plugin.tableActions.statusFilter")}
+          onChange={changeStatusFilter}
+        />
+      </div>
+      <div className="column is-centered is-narrow is-flex">
+        <Level>
+          <FilterLabel>{t("scm-trace-monitor-plugin.tableActions.categoryFilter")}</FilterLabel>
+          <Select value={categoryFilter} options={createCategoryFilterOptions()} onChange={changeCategoryFilter} />
+        </Level>
+      </div>
+      <div className="column is-narrow is-flex">
+        <Level>
           <FilterLabel>{t("scm-trace-monitor-plugin.tableActions.searchFilter")}</FilterLabel>
-          <FilterInput value={searchFilter} filter={setSearchFilter} placeholder="" />
-        </>
-      }
-    />
+          <FilterInput value={searchFilter} filter={setSearchFilter} placeholder="" className={"is-fullwidth"} />
+        </Level>
+      </div>
+    </TableActions>
   );
 
   const filteredSpans = () => {
