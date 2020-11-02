@@ -21,34 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { RouteComponentProps, withRouter } from "react-router-dom";
-import { WithTranslation, withTranslation } from "react-i18next";
+import React, { FC } from "react";
 import { SecondaryNavigationItem } from "@scm-manager/ui-components";
+import { useTranslation } from "react-i18next";
+import { useRouteMatch } from "react-router-dom";
 
-type Props = RouteComponentProps & WithTranslation;
+const TraceMonitorNavigation: FC = ({}) => {
+  const [t] = useTranslation("plugins");
+  const match = useRouteMatch();
 
-//TODO Change to FC
-class TraceMonitorNavigation extends React.Component<Props> {
-  matchesTraceMonitor = (route: any) => {
+  const matchesTraceMonitor = (route: any) => {
     const regex = new RegExp("/admin/trace-monitor/.+");
     return route.location.pathname.match(regex);
   };
 
-  render() {
-    const { match, t } = this.props;
+  return (
+    <SecondaryNavigationItem
+      to={match.url + "/trace-monitor/"}
+      icon="fas fa-desktop"
+      label={t("scm-trace-monitor-plugin.navLink")}
+      title={t("scm-trace-monitor-plugin.navLink")}
+      activeWhenMatch={matchesTraceMonitor}
+      activeOnlyWhenExact={false}
+    />
+  );
+};
 
-    return (
-      <SecondaryNavigationItem
-        to={match.url + "/trace-monitor/"}
-        icon="fas fa-desktop"
-        label={t("scm-trace-monitor-plugin.navLink")}
-        title={t("scm-trace-monitor-plugin.navLink")}
-        activeWhenMatch={this.matchesTraceMonitor}
-        activeOnlyWhenExact={false}
-      />
-    );
-  }
-}
-
-export default withTranslation("plugins")(withRouter(TraceMonitorNavigation));
+export default TraceMonitorNavigation;
