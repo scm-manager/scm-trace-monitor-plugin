@@ -56,6 +56,10 @@ const FlexColumn = styled.div`
   flex-basis: auto;
 `;
 
+const FlexNoneColumn = styled.div`
+  flex: none;
+`;
+
 const TableActions = styled.div`
   display: flex;
   align-items: center;
@@ -103,12 +107,12 @@ const TraceMonitorTable: FC<Props> = ({
           onChange={changeStatusFilter}
         />
       </FlexColumn>
-      <div className="column is-centered is-flex">
+      <FlexNoneColumn className="column is-centered is-flex">
         <Level>
           <FilterLabel>{t("scm-trace-monitor-plugin.tableActions.categoryFilter")}</FilterLabel>
           <Select value={categoryFilter} options={createCategoryFilterOptions()} onChange={changeCategoryFilter} />
         </Level>
-      </div>
+      </FlexNoneColumn>
       <div className="column is-flex">
         <Level>
           <FilterLabel>{t("scm-trace-monitor-plugin.tableActions.searchFilter")}</FilterLabel>
