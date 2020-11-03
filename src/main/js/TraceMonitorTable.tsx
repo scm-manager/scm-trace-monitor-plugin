@@ -51,6 +51,11 @@ const Level = styled.div`
   align-items: center;
 `;
 
+const FlexColumn = styled.div`
+  flex-grow: 0;
+  flex-basis: auto;
+`;
+
 const TableActions = styled.div`
   display: flex;
   align-items: center;
@@ -91,23 +96,23 @@ const TraceMonitorTable: FC<Props> = ({
 
   const tableActions = (
     <TableActions className="columns column is-mobile-action-spacing is-clipped">
-      <div className="column is-flex">
+      <FlexColumn className="column is-flex">
         <Checkbox
           checked={statusFilter}
           label={t("scm-trace-monitor-plugin.tableActions.statusFilter")}
           onChange={changeStatusFilter}
         />
-      </div>
-      <div className="column is-centered is-narrow is-flex">
+      </FlexColumn>
+      <div className="column is-centered is-flex">
         <Level>
           <FilterLabel>{t("scm-trace-monitor-plugin.tableActions.categoryFilter")}</FilterLabel>
           <Select value={categoryFilter} options={createCategoryFilterOptions()} onChange={changeCategoryFilter} />
         </Level>
       </div>
-      <div className="column is-narrow is-flex">
+      <div className="column is-flex">
         <Level>
           <FilterLabel>{t("scm-trace-monitor-plugin.tableActions.searchFilter")}</FilterLabel>
-          <FilterInput value={searchFilter} filter={setSearchFilter} placeholder="" className={"is-fullwidth"} />
+          <FilterInput value={searchFilter} filter={setSearchFilter} placeholder="" />
         </Level>
       </div>
     </TableActions>
