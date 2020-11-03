@@ -26,6 +26,10 @@ package com.cloudogu.scm.tracemonitor;
 import com.cloudogu.scm.tracemonitor.config.GlobalConfig;
 import com.cloudogu.scm.tracemonitor.config.GlobalConfigStore;
 import com.google.common.collect.ImmutableMap;
+import org.apache.shiro.authz.AuthorizationException;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,10 +42,14 @@ import java.time.Instant;
 import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TraceStoreTest {
+  @Mock
+  private Subject subject;
 
   @Mock
   private GlobalConfigStore globalConfigStore;
@@ -50,8 +58,26 @@ class TraceStoreTest {
 
   @BeforeEach
   void initStore() {
+    ThreadContext.bind(subject);
     InMemoryConfigurationEntryStoreFactory factory = new InMemoryConfigurationEntryStoreFactory();
     store = new TraceStore(factory, globalConfigStore);
+  }
+
+  @AfterEach
+  void tearDown() {
+    ThreadContext.unbindSubject();
+  }
+
+  @Test
+  void shouldNotGetSpansIfNotPermitted() {
+    doThrow(AuthorizationException.class).when(subject).checkPermission("traceMonitor:read");
+    assertThrows(AuthorizationException.class, () -> store.getAll());
+  }
+
+  @Test
+  void shouldNotGetSpansByCategoryIfNotPermitted() {
+    doThrow(AuthorizationException.class).when(subject).checkPermission("traceMonitor:read");
+    assertThrows(AuthorizationException.class, () -> store.get("Jenkins"));
   }
 
   @Test

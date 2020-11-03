@@ -100,7 +100,6 @@ public class TraceMonitorResource {
     @DefaultValue("") @QueryParam("category") String category,
     @QueryParam("onlyFailed") boolean onlyFailed
   ) {
-    SecurityUtils.getSubject().checkPermission("traceMonitor:read");
     Collection<SpanContextDto> dtos;
 
     if (!Strings.isNullOrEmpty(category)) {
@@ -144,7 +143,6 @@ public class TraceMonitorResource {
     )
   )
   public AvailableCategoriesDto getAvailableCategories() {
-    SecurityUtils.getSubject().checkPermission("traceMonitor:read");
     final String selfLink = new LinkBuilder(scmPathInfo.get().get(), TraceMonitorResource.class).method("getAvailableCategories").parameters().href();
     List<String> categories = store.getAll()
       .stream()

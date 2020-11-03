@@ -26,6 +26,9 @@ package com.cloudogu.scm.tracemonitor;
 import com.cloudogu.scm.tracemonitor.config.GlobalConfig;
 import com.cloudogu.scm.tracemonitor.config.GlobalConfigStore;
 import com.google.common.collect.ImmutableMap;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,6 +50,8 @@ import static org.mockito.Mockito.when;
 class TraceExporterTest {
 
   @Mock
+  private Subject subject;
+  @Mock
   private GlobalConfigStore globalConfigStore;
   @Mock
   private ScmEventBus eventBus;
@@ -55,9 +60,15 @@ class TraceExporterTest {
 
   @BeforeEach
   void initStore() {
+    ThreadContext.bind(subject);
     InMemoryConfigurationEntryStoreFactory factory = new InMemoryConfigurationEntryStoreFactory();
     store = new TraceStore(factory, globalConfigStore);
     traceExporter = new TraceExporter(store, eventBus);
+  }
+
+  @AfterEach
+  void tearDown() {
+    ThreadContext.unbindSubject();
   }
 
   @Test

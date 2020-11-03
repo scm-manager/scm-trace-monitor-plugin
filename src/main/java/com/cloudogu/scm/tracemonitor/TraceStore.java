@@ -26,6 +26,7 @@ package com.cloudogu.scm.tracemonitor;
 import com.cloudogu.scm.tracemonitor.config.GlobalConfigStore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.shiro.SecurityUtils;
 import sonia.scm.store.ConfigurationEntryStoreFactory;
 import sonia.scm.store.DataStore;
 import sonia.scm.trace.SpanContext;
@@ -53,6 +54,7 @@ public class TraceStore {
   }
 
   public Collection<SpanContext> getAll() {
+    SecurityUtils.getSubject().checkPermission("traceMonitor:read");
     DataStore<StoreEntry> store = createStore();
     List<SpanContext> spans = new ArrayList<>();
     store.getAll().values().forEach(entry -> spans.addAll(entry.getSpans()));
@@ -63,7 +65,7 @@ public class TraceStore {
     return getAll().stream().filter(span -> kind.equalsIgnoreCase(span.getKind())).collect(Collectors.toList());
   }
 
-  public void add(SpanContext spanContext) {
+  void add(SpanContext spanContext) {
     DataStore<StoreEntry> store = createStore();
     StoreEntry storeEntry = store.get(spanContext.getKind());
     int configuredStoreSize = globalConfigStore.get().getStoreSize();

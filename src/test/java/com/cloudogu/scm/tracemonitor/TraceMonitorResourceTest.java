@@ -64,10 +64,6 @@ class TraceMonitorResourceTest {
   @Mock
   ScmPathInfoStore scmPathInfoStore;
 
-
-  @Mock
-  private Subject subject;
-
   @Mock
   private TraceStore store;
 
@@ -81,7 +77,6 @@ class TraceMonitorResourceTest {
 
   @BeforeEach
   void initResource() {
-    ThreadContext.bind(subject);
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(resource);
     lenient().when(pathInfoStoreProvider.get()).thenReturn(scmPathInfoStore);
@@ -91,17 +86,6 @@ class TraceMonitorResourceTest {
   @AfterEach
   void tearDown() {
     ThreadContext.unbindSubject();
-  }
-
-  @Test
-  void shouldThrowAuthorizationException() throws URISyntaxException {
-    doThrow(AuthorizationException.class).when(subject).checkPermission("traceMonitor:read");
-
-    MockHttpRequest request = MockHttpRequest.get("/" + TraceMonitorResource.TRACE_MONITOR_PATH);
-    MockHttpResponse response = new MockHttpResponse();
-
-    dispatcher.invoke(request, response);
-    assertThat(response.getStatus()).isEqualTo(403);
   }
 
   @Test
@@ -157,17 +141,6 @@ class TraceMonitorResourceTest {
 
     assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
     assertThat(response.getContentAsString()).contains("{\"spans\":[],\"_links\":{\"self\":{\"href\":\"hitchhiker.org/scm/v2/trace-monitor/\"}}}");
-  }
-
-  @Test
-  void shouldThrowAuthorizationExceptionForCategories() throws URISyntaxException {
-    doThrow(AuthorizationException.class).when(subject).checkPermission("traceMonitor:read");
-
-    MockHttpRequest request = MockHttpRequest.get("/" + TraceMonitorResource.TRACE_MONITOR_PATH + "available-categories");
-    MockHttpResponse response = new MockHttpResponse();
-
-    dispatcher.invoke(request, response);
-    assertThat(response.getStatus()).isEqualTo(403);
   }
 
   @Test
