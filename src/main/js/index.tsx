@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import {binder} from "@scm-manager/ui-extensions";
+import { binder } from "@scm-manager/ui-extensions";
 import { ConfigurationBinder as cfgBinder } from "@scm-manager/ui-components";
 import GlobalTraceMonitorConfiguration from "./config/GlobalTraceMonitorConfiguration";
 import RequestFailedEvent from "./landingpage/RequestFailedEvent";
@@ -32,8 +32,12 @@ import TraceMonitorNavigation from "./TraceMonitorNavigation";
 import { Links } from "@scm-manager/ui-types";
 import TraceMonitor from "./TraceMonitor";
 
-
-cfgBinder.bindGlobal("/trace-monitor", "scm-trace-monitor-plugin.global.nav-link", "traceMonitorConfig", GlobalTraceMonitorConfiguration);
+cfgBinder.bindGlobal(
+  "/trace-monitor",
+  "scm-trace-monitor-plugin.global.nav-link",
+  "traceMonitorConfig",
+  GlobalTraceMonitorConfiguration
+);
 
 binder.bind("landingpage.myevents", RequestFailedEvent);
 
@@ -48,7 +52,12 @@ export const predicate = ({ links }: PredicateProps) => {
 const TraceMonitorRoute = ({ links }) => {
   return (
     <>
-      <Route path="/admin/trace-monitor" component={() => <TraceMonitor traceMonitorLink={links.traceMonitor.href} categoriesLink={links.traceMonitorCategories.href} />} />
+      <Route
+        path="/admin/trace-monitor"
+        component={() => (
+          <TraceMonitor traceMonitorLink={links.traceMonitor.href} categoriesLink={links.traceMonitorCategories.href} />
+        )}
+      />
     </>
   );
 };
@@ -56,4 +65,3 @@ const TraceMonitorRoute = ({ links }) => {
 binder.bind("admin.route", TraceMonitorRoute, predicate);
 
 binder.bind("admin.navigation", TraceMonitorNavigation, predicate);
-

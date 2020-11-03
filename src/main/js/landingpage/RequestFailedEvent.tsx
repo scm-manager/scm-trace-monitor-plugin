@@ -29,15 +29,13 @@ const RequestFailedEvent = ({ event }) => {
   const [t] = useTranslation("plugins");
   const link = `/admin/setting/trace-monitor`;
 
-
   return (
     <CardColumnSmall
       link={link}
       contentLeft={
         <strong>
           {t("scm-trace-monitor-plugin.landingpage.requestFailed.header", {
-            ...event,
-            author: <span className="has-text-info">{event.author}</span>
+            ...event
           })}
         </strong>
       }

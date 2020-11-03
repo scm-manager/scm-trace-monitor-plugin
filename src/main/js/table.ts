@@ -35,4 +35,3 @@ export const convertMillisToString = (ms: number) => {
 export const formatAsTimestamp = (span: Span) => {
   return format(new Date(span.closed), "yyyy-MM-dd HH:mm:ss");
 };
-

@@ -65,8 +65,8 @@ const TraceMonitor: FC<Props> = ({ traceMonitorLink, categoriesLink }) => {
       .then(r => r.json())
       .then(r => r.categories)
       .then(setCategories)
-      .catch(setError)
-  }, [])
+      .catch(setError);
+  }, []);
 
   const createUrl = () => {
     let url = traceMonitorLink;

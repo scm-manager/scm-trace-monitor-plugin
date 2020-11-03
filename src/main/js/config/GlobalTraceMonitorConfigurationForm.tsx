@@ -27,7 +27,7 @@ import { useTranslation } from "react-i18next";
 
 export type Configuration = {
   storeSize: number;
-}
+};
 
 type Props = {
   initialConfiguration: Configuration;
