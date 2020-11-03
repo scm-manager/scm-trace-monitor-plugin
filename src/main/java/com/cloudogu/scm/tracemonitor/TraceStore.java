@@ -62,7 +62,9 @@ public class TraceStore {
   }
 
   public Collection<SpanContext> get(String kind) {
-    return getAll().stream().filter(span -> kind.equalsIgnoreCase(span.getKind())).collect(Collectors.toList());
+    return getAll().stream()
+      .filter(span -> kind.equalsIgnoreCase(span.getKind()))
+      .collect(Collectors.toList());
   }
 
   void add(SpanContext spanContext) {
