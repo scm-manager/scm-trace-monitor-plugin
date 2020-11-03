@@ -33,6 +33,12 @@
     },
     "modal": {
       "title": "Request Details"
+    },
+    "landingpage": {
+      "requestFailed": {
+        "header": "Request failed",
+        "category": "Category: {{kind}}"
+      }
     }
   },
   "permissions": {

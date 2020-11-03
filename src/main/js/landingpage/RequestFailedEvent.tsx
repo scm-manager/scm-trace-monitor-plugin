@@ -23,23 +23,22 @@
  */
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
+import { CardColumnSmall, DateFromNow, Icon } from "@scm-manager/ui-components";
 
 const RequestFailedEvent = ({ event }) => {
   const [t] = useTranslation("plugins");
-  const link = `/admin/setting/trace-monitor`;
+  const link = `/admin/trace-monitor`;
+  const icon = <Icon name="envelope fa-fw fa-2x" color="inherit" />;
 
   return (
     <CardColumnSmall
       link={link}
-      contentLeft={
-        <strong>
-          {t("scm-trace-monitor-plugin.landingpage.requestFailed.header", {
-            ...event
-          })}
-        </strong>
-      }
+      avatar={icon}
+      contentLeft={<strong>{t("scm-trace-monitor-plugin.landingpage.requestFailed.header")}</strong>}
       contentRight={<DateFromNow date={event.date} />}
+      footer={t("scm-trace-monitor-plugin.landingpage.requestFailed.category", {
+        ...event.context
+      })}
     />
   );
 };

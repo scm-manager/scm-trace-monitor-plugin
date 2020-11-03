@@ -26,6 +26,7 @@ package com.cloudogu.scm.tracemonitor;
 import com.cloudogu.scm.landingpage.myevents.MyEvent;
 import com.github.legman.Subscribe;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import sonia.scm.EagerSingleton;
 import sonia.scm.event.Event;
 import sonia.scm.event.ScmEventBus;
@@ -58,10 +59,11 @@ public class RequestFailedEventSubscriber {
   @Event
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlRootElement
+  @NoArgsConstructor
   @Getter
   public static class RequestFailedMyEvent extends MyEvent {
 
-    private final SpanContext context;
+    private SpanContext context;
 
     public RequestFailedMyEvent(SpanContext context) {
       super("RequestFailedMyEvent", "traceMonitor:read");
