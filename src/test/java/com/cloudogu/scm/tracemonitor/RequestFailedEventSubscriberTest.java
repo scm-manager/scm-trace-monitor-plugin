@@ -48,7 +48,7 @@ class RequestFailedEventSubscriberTest {
 
   @Test
   void shouldSendEventWithSameContext() {
-    SpanContext context = SpanContext.create("Jenkins", ImmutableMap.of(), Instant.now(), Instant.now().plusMillis(100L), true);
+    SpanContext context = new SpanContext("Jenkins", ImmutableMap.of(), Instant.now(), Instant.now().plusMillis(100L), true);
     subscriber.onEvent(new RequestFailedEvent(context));
 
     verify(eventBus).post(any(RequestFailedEventSubscriber.RequestFailedMyEvent.class));

@@ -32,7 +32,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.Getter;
-import org.apache.shiro.SecurityUtils;
 import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
@@ -47,6 +46,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -98,21 +98,31 @@ public class TraceMonitorResource {
   )
   public TraceMonitorResultDto get(
     @DefaultValue("") @QueryParam("category") String category,
-    @QueryParam("onlyFailed") boolean onlyFailed
+    @QueryParam("onlyFailed") boolean onlyFailed,
+    @DefaultValue("50") @QueryParam("limit") int limit
   ) {
     Collection<SpanContextDto> dtos;
-
+    Collection<SpanContext> spanContexts;
     if (!Strings.isNullOrEmpty(category)) {
-      dtos = mapSpanContextCollectionToTraceMonitorResultDto(store.get(category));
+      spanContexts = limitAndSortByTimestamp(store.get(category), limit);
     } else {
-      dtos = mapSpanContextCollectionToTraceMonitorResultDto(store.getAll());
+      spanContexts = limitAndSortByTimestamp(store.getAll(), limit);
     }
+    dtos = mapSpanContextCollectionToTraceMonitorResultDto(spanContexts);
 
     if (onlyFailed) {
       dtos = filterForFailedSpans(dtos);
     }
     final String selfLink = new LinkBuilder(scmPathInfo.get().get(), TraceMonitorResource.class).method("get").parameters().href();
     return new TraceMonitorResultDto(new Links.Builder().self(selfLink).build(), dtos);
+  }
+
+  private Collection<SpanContext> limitAndSortByTimestamp(Collection<SpanContext> spanContexts, int limit) {
+    return spanContexts
+      .stream()
+      .sorted(Comparator.comparing(SpanContext::getClosed).reversed())
+      .limit(limit)
+      .collect(Collectors.toList());
   }
 
   @GET

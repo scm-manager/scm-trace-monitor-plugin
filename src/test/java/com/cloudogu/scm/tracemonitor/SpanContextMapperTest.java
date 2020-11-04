@@ -37,7 +37,7 @@ class SpanContextMapperTest {
 
   @Test
   void shouldMapToDto() {
-    SpanContext spanContext = SpanContext.create(
+    SpanContext spanContext = new SpanContext(
       "Hitchhiker",
       ImmutableMap.of("url", "hitchhiker.org/scm"),
       Instant.now(),

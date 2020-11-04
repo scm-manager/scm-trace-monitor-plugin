@@ -26,8 +26,6 @@ package com.cloudogu.scm.tracemonitor;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Provider;
-import org.apache.shiro.authz.AuthorizationException;
-import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
@@ -35,7 +33,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -48,12 +45,15 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TraceMonitorResourceTest {
@@ -155,10 +155,32 @@ class TraceMonitorResourceTest {
     assertThat(response.getContentAsString()).contains("{\"categories\":[\"Jenkins\",\"Redmine\"],\"_links\":{\"self\":{\"href\":\"hitchhiker.org/scm/v2/trace-monitor/available-categories\"}}}");
   }
 
+  @Test
+  void shouldGetSortedAndLimitedSpans() throws URISyntaxException, UnsupportedEncodingException {
+    List<SpanContext> contexts = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      SpanContext span = new SpanContext("Jenkins", ImmutableMap.of("url", "hitchhiker.org/jenkins"), Instant.ofEpochMilli(i), Instant.ofEpochMilli(i).plusMillis(i), true);
+      contexts.add(span);
+      lenient().when(mapper.map(span)).thenReturn(new SpanContextDto("Jenkins", ImmutableMap.of("url", "hitchhiker.org/jenkins"), Instant.ofEpochMilli(i), Instant.ofEpochMilli(i).plusMillis(i), i, true));
+    }
+    when(store.getAll()).thenReturn(contexts);
+
+    MockHttpRequest request = MockHttpRequest.get("/" + TraceMonitorResource.TRACE_MONITOR_PATH + "?limit=10");
+    MockHttpResponse response = new MockHttpResponse();
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
+    assertThat(response.getContentAsString()).contains("\"kind\":\"Jenkins\"");
+    assertThat(response.getContentAsString()).contains("\"durationInMillis\":99");
+    assertThat(response.getContentAsString()).contains("\"durationInMillis\":90");
+    assertThat(response.getContentAsString()).doesNotContain("\"durationInMillis\":89");
+  }
+
 
   private void mockSpans(Optional<String> category) {
-    SpanContext span1 = SpanContext.create("Jenkins", ImmutableMap.of("url", "hitchhiker.org/jenkins"), Instant.now(), Instant.now().plusMillis(200L), true);
-    SpanContext span2 = SpanContext.create("Redmine", ImmutableMap.of("url", "hitchhiker.org/redmine"), Instant.now(), Instant.now().plusMillis(400L), false);
+    SpanContext span1 = new SpanContext("Jenkins", ImmutableMap.of("url", "hitchhiker.org/jenkins"), Instant.now(), Instant.now().plusMillis(200L), true);
+    SpanContext span2 = new SpanContext("Redmine", ImmutableMap.of("url", "hitchhiker.org/redmine"), Instant.now(), Instant.now().plusMillis(400L), false);
     lenient().when(store.getAll()).thenReturn(ImmutableList.of(span1, span2));
     lenient().when(mapper.map(span1)).thenReturn(new SpanContextDto("Jenkins", ImmutableMap.of("url", "hitchhiker.org/jenkins"), Instant.now(), Instant.now().plusMillis(200L), 200, true));
     lenient().when(mapper.map(span2)).thenReturn(new SpanContextDto("Redmine", ImmutableMap.of("url", "hitchhiker.org/redmine"), Instant.now(), Instant.now().plusMillis(400L), 400, false));

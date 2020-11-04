@@ -87,7 +87,7 @@ class TraceExporterTest {
   }
 
   private SpanContext createSpanContext(boolean failed) {
-    return SpanContext.create("Jenkins", ImmutableMap.of("url", "hitchhiker.org/scm"), Instant.ofEpochMilli(0L), Instant.ofEpochMilli(200L), failed);
+    return new SpanContext("Jenkins", ImmutableMap.of("url", "hitchhiker.org/scm"), Instant.ofEpochMilli(0L), Instant.ofEpochMilli(200L), failed);
   }
 
   @Test

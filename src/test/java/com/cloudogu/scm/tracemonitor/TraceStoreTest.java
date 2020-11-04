@@ -180,7 +180,7 @@ class TraceStoreTest {
   }
 
   private SpanContext addSpanContextToStore(String kind, long opened, boolean failed) {
-    SpanContext spanContext = SpanContext.create(kind, ImmutableMap.of("url", "hitchhiker.org/scm"), Instant.ofEpochMilli(opened), Instant.ofEpochMilli(200L), failed);
+    SpanContext spanContext = new SpanContext(kind, ImmutableMap.of("url", "hitchhiker.org/scm"), Instant.ofEpochMilli(opened), Instant.ofEpochMilli(200L), failed);
     store.add(spanContext);
     return spanContext;
   }
