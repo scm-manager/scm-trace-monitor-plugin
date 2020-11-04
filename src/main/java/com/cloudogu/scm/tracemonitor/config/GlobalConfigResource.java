@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.shiro.SecurityUtils;
 import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.web.VndMediaType;
 
@@ -90,6 +91,7 @@ public class GlobalConfigResource {
     )
   )
   public Response get() {
+    SecurityUtils.getSubject().checkPermission("configuration:read:traceMonitor");
     return Response.ok(mapper.map(store.get())).build();
   }
 

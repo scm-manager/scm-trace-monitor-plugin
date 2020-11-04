@@ -37,7 +37,7 @@ import { useTranslation } from "react-i18next";
 import { Span } from "./TraceMonitor";
 import styled from "styled-components";
 import SpanDetailsModal from "./SpanDetailsModal";
-import { convertMillisToString, formatAsTimestamp } from "./table";
+import { convertMillisToString, formatAsTimestamp } from "./time";
 
 const FilterLabel = styled.span`
   color: #9a9a9a;

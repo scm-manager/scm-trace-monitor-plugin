@@ -42,7 +42,6 @@ public class GlobalConfigStore {
   }
 
   public GlobalConfig get() {
-    SecurityUtils.getSubject().checkPermission("configuration:read:traceMonitor");
     GlobalConfig globalConfig = createStore().get();
     if (globalConfig == null) {
       globalConfig = new GlobalConfig();

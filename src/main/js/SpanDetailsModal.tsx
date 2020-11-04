@@ -25,7 +25,7 @@ import React, { FC } from "react";
 import { Span } from "./TraceMonitor";
 import { Modal, Icon } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
-import { convertMillisToString, formatAsTimestamp } from "./table";
+import { convertMillisToString, formatAsTimestamp } from "./time";
 
 type Props = {
   active: boolean;
@@ -36,42 +36,40 @@ type Props = {
 const SpanDetailsModal: FC<Props> = ({ onClose, modalData, active }) => {
   const [t] = useTranslation("plugins");
   const body = modalData ? (
-    <>
-      <table className="table">
-        <tbody>
+    <table className="table">
+      <tbody>
+        <tr>
+          <th>{t("scm-trace-monitor-plugin.table.column.status")}</th>
+          <td>
+            {modalData.failed ? (
+              <>
+                <Icon color="danger" name="exclamation-triangle" />
+                {" " + t("scm-trace-monitor-plugin.table.failed")}
+              </>
+            ) : (
+              <>
+                <Icon color="success" name="check-circle" iconStyle="far" />
+                {" " + t("scm-trace-monitor-plugin.table.success")}
+              </>
+            )}
+          </td>
+        </tr>
+        <tr>
+          <th>{t("scm-trace-monitor-plugin.table.column.timestamp")}</th>
+          <td>{formatAsTimestamp(modalData)}</td>
+        </tr>
+        <tr>
+          <th>{t("scm-trace-monitor-plugin.table.column.duration")}</th>
+          <td>{convertMillisToString(modalData.durationInMillis)}</td>
+        </tr>
+        {Object.entries(modalData.labels).map(entry => (
           <tr>
-            <th>{t("scm-trace-monitor-plugin.table.column.status")}</th>
-            <td>
-              {modalData.failed ? (
-                <>
-                  <Icon color="danger" name="exclamation-triangle" />
-                  {" " + t("scm-trace-monitor-plugin.table.failed")}
-                </>
-              ) : (
-                <>
-                  <Icon color="success" name="check-circle" iconStyle="far" />
-                  {" " + t("scm-trace-monitor-plugin.table.success")}
-                </>
-              )}
-            </td>
+            <th>{entry[0].charAt(0).toUpperCase() + entry[0].slice(1)}</th>
+            <td>{entry[1]}</td>
           </tr>
-          <tr>
-            <th>{t("scm-trace-monitor-plugin.table.column.timestamp")}</th>
-            <td>{formatAsTimestamp(modalData)}</td>
-          </tr>
-          <tr>
-            <th>{t("scm-trace-monitor-plugin.table.column.duration")}</th>
-            <td>{convertMillisToString(modalData.durationInMillis)}</td>
-          </tr>
-          {Object.entries(modalData.labels).map(entry => (
-            <tr>
-              <th>{entry[0].charAt(0).toUpperCase() + entry[0].slice(1)}</th>
-              <td>{entry[1]}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
+        ))}
+      </tbody>
+    </table>
   ) : null;
 
   return (

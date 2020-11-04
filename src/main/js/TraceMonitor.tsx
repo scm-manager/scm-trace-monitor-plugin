@@ -31,7 +31,7 @@ export type Span = {
   opened: Date;
   closed: Date;
   durationInMillis: number;
-  labels: {};
+  labels: { [key: string]: string };
   failed: boolean;
 };
 

@@ -23,8 +23,12 @@
  */
 package com.cloudogu.scm.tracemonitor.config;
 
+import org.apache.shiro.authz.AuthorizationException;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
 import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,11 +44,15 @@ import java.net.URISyntaxException;
 import static com.cloudogu.scm.tracemonitor.config.GlobalConfigResource.MEDIA_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GlobalConfigResourceTest {
+
+  @Mock
+  private Subject subject;
 
   @Mock
   private GlobalConfigStore store;
@@ -59,8 +67,25 @@ class GlobalConfigResourceTest {
 
   @BeforeEach
   void initResource() {
+    ThreadContext.bind(subject);
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(resource);
+  }
+
+  @AfterEach
+  void tearDown() {
+    ThreadContext.unbindSubject();
+  }
+
+  @Test
+  void shouldReturnForbiddenIfNotPermitted() throws URISyntaxException {
+    doThrow(AuthorizationException.class).when(subject).checkPermission("configuration:read:traceMonitor");
+    MockHttpRequest request = MockHttpRequest.get("/" + GlobalConfigResource.TRACE_MONITOR_CONFIG_PATH_V2);
+    MockHttpResponse response = new MockHttpResponse();
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(403);
   }
 
   @Test

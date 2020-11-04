@@ -64,12 +64,6 @@ class GlobalConfigStoreTest {
   }
 
   @Test
-  void shouldNotGetConfigWithoutPermission() {
-    doThrow(AuthorizationException.class).when(subject).checkPermission("configuration:read:traceMonitor");
-    assertThrows(AuthorizationException.class, () -> store.get());
-  }
-
-  @Test
   void shouldUpdateConfig() {
     store.update(new GlobalConfig(1337));
 
