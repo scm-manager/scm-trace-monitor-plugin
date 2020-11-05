@@ -1,5 +1,60 @@
 {
   "scm-trace-monitor-plugin": {
-
+    "title": "Administration",
+    "subtitle": "Trace Monitor",
+    "navLink": "Trace Monitor",
+    "global": {
+      "title": "Trace Monitor Configuration",
+      "nav-link": "Trace Monitor"
+    },
+    "config": {
+      "form": {
+        "storeSize": "Amount of stored requests per category",
+        "storeSizeHelpText": "Defines how many requests will be stored per category. \nBe careful: Increasing the store size too much could cause high memory usage."
+      }
+    },
+    "table": {
+      "column": {
+        "kind": "Category",
+        "status": "Result",
+        "timestamp": "Timestamp",
+        "duration": "Duration"
+      },
+      "success": "success",
+      "failed": "failed",
+      "details": "Show details",
+      "emptyMessage": "No requests found."
+    },
+    "tableActions": {
+      "statusFilter": "Show only failed requests",
+      "categoryFilter": "Filter Categories",
+      "searchFilter": "Search for Label",
+      "all": "All"
+    },
+    "modal": {
+      "title": "Request Details"
+    },
+    "landingpage": {
+      "requestFailed": {
+        "header": "Request failed",
+        "category": "Category: {{kind}}"
+      }
+    }
+  },
+  "permissions": {
+    "configuration": {
+      "read,write": {
+        "traceMonitor": {
+          "displayName": "Modify global trace monitor configuration",
+          "description": "May modify the global trace monitor configuration"
+        }
+      }
+    },
+    "traceMonitor": {
+      "read": {
+        "displayName": "Access trace monitor",
+        "description": "May see the trace monitor"
+      }
+    }
   }
 }

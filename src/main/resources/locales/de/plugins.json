@@ -1,5 +1,60 @@
 {
   "scm-trace-monitor-plugin": {
-
+    "title": "Administration",
+    "subtitle": "Trace Monitor",
+    "navLink": "Trace Monitor",
+    "global": {
+      "title": "Trace Monitor Konfiguration",
+      "nav-link": "Trace Monitor"
+    },
+    "config": {
+      "form": {
+        "storeSize": "Anzahl der gespeicherten Anfragen je Kategorie",
+        "storeSizeHelpText": "Definiert die Anzahl der gespeicherten Anfragen je Kategorie. \nVorsicht: Eine hohe Anzahl kann zu starker Speicherauslastung führen."
+      }
+    },
+    "table": {
+      "column": {
+        "kind": "Kategorie",
+        "status": "Resultat",
+        "timestamp": "Zeitpunkt",
+        "duration": "Dauer"
+      },
+      "success": "erfolgreich",
+      "failed": "fehlgeschlagen",
+      "details": "Details anzeigen",
+      "emptyMessage": "Keine Daten gefunden."
+    },
+    "tableActions": {
+      "statusFilter": "Nur fehlgeschlagene anzeigen",
+      "categoryFilter": "Nach Kategorie filtern",
+      "searchFilter": "Nach Label suchen",
+      "all": "Alle"
+    },
+    "modal": {
+      "title": "Anfrage Details"
+    },
+    "landingpage": {
+      "requestFailed": {
+        "header": "Anfrage fehlgeschlagen",
+        "category": "Kategorie: {{kind}}"
+      }
+    }
+  },
+  "permissions": {
+    "configuration": {
+      "read,write": {
+        "traceMonitor": {
+          "displayName": "Globale Trace Monitor Konfiguration bearbeiten",
+          "description": "Darf die globale Trace Monitor Konfiguration bearbeiten"
+        }
+      }
+    },
+    "traceMonitor": {
+      "read": {
+        "displayName": "Trace Monitor sehen",
+        "description": "Darf den Trace Monitor sehen"
+      }
+    }
   }
 }

@@ -21,21 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.cloudogu.scm.tracemonitor;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import org.junit.jupiter.api.Test;
 
-@Path("v2/sample")
-class SampleResource {
+import java.util.Deque;
+import java.util.Queue;
 
-  @GET
-  @Produces(MediaType.TEXT_PLAIN)
-  public String sample() {
-    return "Sample";
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+
+class EvictingQueueTest {
+
+  @Test
+  void shouldReturnFalseIfMaxSizeIsZero() {
+    Queue<String> queue = EvictingQueue.create(0);
+    assertThat(queue.add("a")).isFalse();
+  }
+
+  @Test
+  void shouldEvictFirstAddedEntry() {
+    Queue<String> queue = EvictingQueue.create(2);
+    assertThat(queue.add("a")).isTrue();
+    assertThat(queue.add("b")).isTrue();
+    assertThat(queue.add("c")).isTrue();
+    assertThat(queue).containsOnly("b", "c");
   }
 
 }

@@ -21,11 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.tracemonitor;
 
-describe("frontend unit tests", () => {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import sonia.scm.event.Event;
+import sonia.scm.trace.SpanContext;
 
-  it("some test", () => {
-    expect( 21 * 2 ).toBe(42);
-  });
-
-});
+@Event
+@Getter
+@AllArgsConstructor
+public class RequestFailedEvent {
+  private final SpanContext context;
+}
