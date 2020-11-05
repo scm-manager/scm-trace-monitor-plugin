@@ -26,16 +26,15 @@ package com.cloudogu.scm.tracemonitor;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
-import sonia.scm.api.v2.resources.BaseMapper;
 import sonia.scm.trace.SpanContext;
 
 @Mapper
-public abstract class SpanContextMapper extends BaseMapper {
+public interface SpanContextMapper {
 
-  public abstract SpanContextDto map(SpanContext context);
+  SpanContextDto map(SpanContext context);
 
   @AfterMapping
-  void addDuration(@MappingTarget SpanContextDto dto, SpanContext context) {
+  default void addDuration(@MappingTarget SpanContextDto dto, SpanContext context) {
     dto.setDurationInMillis(context.duration().toMillis());
   }
 }

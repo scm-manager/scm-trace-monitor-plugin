@@ -30,25 +30,20 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import java.io.Serializable;
 import java.util.ArrayDeque;
-import java.util.Iterator;
 import java.util.Queue;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-public final class EvictingQueue<E> extends ForwardingQueue<E> implements Serializable {
+public final class EvictingQueue<E> extends ForwardingQueue<E> {
 
-  private ArrayDeque<E> delegate;
+  private final ArrayDeque<E> delegate;
+  @VisibleForTesting
+  int maxSize;
 
   public EvictingQueue() {
     this.delegate = new ArrayDeque<>();
     this.maxSize = 100;
   }
-
-  @VisibleForTesting
-  int maxSize;
-
-  private static final long serialVersionUID = 0L;
 
   private EvictingQueue(int maxSize) {
     Preconditions.checkArgument(maxSize >= 0, "maxSize (%s) must >= 0", maxSize);
@@ -64,15 +59,11 @@ public final class EvictingQueue<E> extends ForwardingQueue<E> implements Serial
     return this.delegate;
   }
 
-  public Iterator<E> descendingIterator() {
-    return delegate.descendingIterator();
-  }
-
   @CanIgnoreReturnValue
   public boolean add(E e) {
     Preconditions.checkNotNull(e);
     if (this.maxSize == 0) {
-      return true;
+      return false;
     } else {
       if (this.size() == this.maxSize) {
         this.delegate.remove();

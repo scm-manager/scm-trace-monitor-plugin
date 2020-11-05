@@ -75,6 +75,7 @@ class GlobalConfigStoreTest {
   void shouldNotUpdateConfigWithoutPermission() {
     doThrow(AuthorizationException.class).when(subject).checkPermission("configuration:write:traceMonitor");
 
-    assertThrows(AuthorizationException.class, () -> store.update(new GlobalConfig(1337)));
+    GlobalConfig config = new GlobalConfig(1337);
+    assertThrows(AuthorizationException.class, () -> store.update(config));
   }
 }

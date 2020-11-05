@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class SpanContextMapperTest {
 
-  SpanContextMapper mapper = new SpanContextMapperImpl();
+  private SpanContextMapper mapper = new SpanContextMapperImpl();
 
   @Test
   void shouldMapToDto() {
