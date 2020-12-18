@@ -35,7 +35,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import sonia.scm.store.InMemoryConfigurationEntryStoreFactory;
+import sonia.scm.store.InMemoryDataStore;
+import sonia.scm.store.InMemoryDataStoreFactory;
 import sonia.scm.trace.SpanContext;
 
 import java.time.Instant;
@@ -59,7 +60,8 @@ class TraceStoreTest {
   @BeforeEach
   void initStore() {
     ThreadContext.bind(subject);
-    InMemoryConfigurationEntryStoreFactory factory = new InMemoryConfigurationEntryStoreFactory();
+    InMemoryDataStore<TraceStore.StoreEntry> dataStore = new InMemoryDataStore<>();
+    InMemoryDataStoreFactory factory = new InMemoryDataStoreFactory(dataStore);
     store = new TraceStore(factory, globalConfigStore);
   }
 
