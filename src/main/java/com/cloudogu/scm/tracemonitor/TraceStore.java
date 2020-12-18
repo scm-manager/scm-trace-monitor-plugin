@@ -41,6 +41,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -63,26 +64,16 @@ public class TraceStore {
   public Collection<SpanContext> getAll() {
     SecurityUtils.getSubject().checkPermission("traceMonitor:read");
     List<SpanContext> spans = new ArrayList<>();
-    doSynchronized("", false, () -> {
-      createStore()
-        .getAll()
-        .values()
-        .forEach(entry -> spans.addAll(entry.getSpans()));
-      return null;
-    });
+    createStore()
+      .getAll()
+      .values()
+      .forEach(entry -> spans.addAll(entry.getSpans()));
     return spans;
   }
 
   public Collection<SpanContext> get(String kind) {
     SecurityUtils.getSubject().checkPermission("traceMonitor:read");
-
-    final ArrayList<SpanContext> spans = new ArrayList<>();
-    doSynchronized(kind, false, () -> {
-      spans.addAll(createStore().get(kind).getSpans());
-      return null;
-    });
-
-    return spans;
+    return doSynchronized(kind, false, () -> Collections.unmodifiableCollection(createStore().get(kind).getSpans()));
   }
 
   synchronized void add(SpanContext spanContext) {
@@ -102,9 +93,13 @@ public class TraceStore {
 
   private StoreEntry resizeStoreEntryMaxSize(StoreEntry storeEntry, int configuredStoreSize) {
     if (storeEntry.getSpans().maxSize != configuredStoreSize) {
-      StoreEntry resizedStoreEntry = new StoreEntry(configuredStoreSize);
-      storeEntry.getSpans().forEach(s -> resizedStoreEntry.getSpans().add(s));
-      storeEntry = resizedStoreEntry;
+      if (configuredStoreSize > storeEntry.getSpans().maxSize) {
+        storeEntry.getSpans().maxSize = configuredStoreSize;
+      } else {
+        StoreEntry resizedStoreEntry = new StoreEntry(configuredStoreSize);
+        storeEntry.getSpans().forEach(s -> resizedStoreEntry.getSpans().add(s));
+        storeEntry = resizedStoreEntry;
+      }
     }
     return storeEntry;
   }
