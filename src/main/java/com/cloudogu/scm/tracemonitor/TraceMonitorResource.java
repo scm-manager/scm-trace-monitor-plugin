@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.cloudogu.scm.tracemonitor.TraceMonitorResource.TRACE_MONITOR_PATH;
 
@@ -99,30 +100,43 @@ public class TraceMonitorResource {
   public TraceMonitorResultDto get(
     @DefaultValue("") @QueryParam("category") String category,
     @QueryParam("onlyFailed") boolean onlyFailed,
-    @DefaultValue("50") @QueryParam("limit") int limit
+    @DefaultValue("5") @QueryParam("limit") int limit
   ) {
-    Collection<SpanContextDto> dtos;
-    Collection<SpanContext> spanContexts;
+    Stream<SpanContextDto> dtos;
+    Stream<SpanContext> spanContexts;
     if (!Strings.isNullOrEmpty(category)) {
-      spanContexts = limitAndSortByTimestamp(store.get(category), limit);
+      spanContexts = sortByTimestamp(store.get(category));
     } else {
-      spanContexts = limitAndSortByTimestamp(store.getAll(), limit);
+      spanContexts = sortByTimestamp(store.getAll());
     }
     dtos = mapSpanContextCollectionToTraceMonitorResultDto(spanContexts);
 
     if (onlyFailed) {
       dtos = filterForFailedSpans(dtos);
     }
+
+    dtos = limitSpans(limit, dtos);
+
     final String selfLink = new LinkBuilder(scmPathInfo.get().get(), TraceMonitorResource.class).method("get").parameters().href();
-    return new TraceMonitorResultDto(new Links.Builder().self(selfLink).build(), dtos);
+    return new TraceMonitorResultDto(new Links.Builder().self(selfLink).build(), dtos.collect(Collectors.toList()));
   }
 
-  private Collection<SpanContext> limitAndSortByTimestamp(Collection<SpanContext> spanContexts, int limit) {
+  private Stream<SpanContextDto> limitSpans(int limit, Stream<SpanContextDto> dtos) {
+    return dtos.limit(limit);
+  }
+
+  private Stream<SpanContext> sortByTimestamp(Collection<SpanContext> spanContexts) {
     return spanContexts
       .stream()
-      .sorted(Comparator.comparing(SpanContext::getClosed).reversed())
-      .limit(limit)
-      .collect(Collectors.toList());
+      .sorted(Comparator.comparing(SpanContext::getClosed).reversed());
+  }
+
+  private Stream<SpanContextDto> filterForFailedSpans(Stream<SpanContextDto> spanContextDtos) {
+    return spanContextDtos.filter(SpanContextDto::isFailed);
+  }
+
+  private Stream<SpanContextDto> mapSpanContextCollectionToTraceMonitorResultDto(Stream<SpanContext> spans) {
+    return spans.map(mapper::map);
   }
 
   @GET

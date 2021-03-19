@@ -177,6 +177,30 @@ class TraceMonitorResourceTest {
     assertThat(response.getContentAsString()).doesNotContain("\"durationInMillis\":89");
   }
 
+  @Test
+  void shouldGetSortedFailedLimitedSpans() throws URISyntaxException, UnsupportedEncodingException {
+    List<SpanContext> contexts = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      SpanContext span = new SpanContext("Jenkins", ImmutableMap.of("url", "hitchhiker.org/jenkins"), Instant.ofEpochMilli(i), Instant.ofEpochMilli(i).plusMillis(i), i > 50);
+      contexts.add(span);
+      lenient().when(mapper.map(span)).thenReturn(new SpanContextDto("Jenkins", ImmutableMap.of("url", "hitchhiker.org/jenkins"), Instant.ofEpochMilli(i), Instant.ofEpochMilli(i).plusMillis(i), i, i > 50));
+    }
+    when(store.getAll()).thenReturn(contexts);
+
+    MockHttpRequest request = MockHttpRequest.get("/" + TraceMonitorResource.TRACE_MONITOR_PATH + "?limit=10&onlyFailed=true");
+    MockHttpResponse response = new MockHttpResponse();
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
+    assertThat(response.getContentAsString()).contains("\"kind\":\"Jenkins\"");
+    assertThat(response.getContentAsString()).contains("\"durationInMillis\":99");
+    assertThat(response.getContentAsString()).contains("\"durationInMillis\":90");
+    assertThat(response.getContentAsString()).contains("\"failed\":true");
+    assertThat(response.getContentAsString()).doesNotContain("\"durationInMillis\":89");
+    assertThat(response.getContentAsString()).doesNotContain("\"failed\":false");
+  }
+
 
   private void mockSpans(Optional<String> category) {
     SpanContext span1 = new SpanContext("Jenkins", ImmutableMap.of("url", "hitchhiker.org/jenkins"), Instant.now(), Instant.now().plusMillis(200L), true);
