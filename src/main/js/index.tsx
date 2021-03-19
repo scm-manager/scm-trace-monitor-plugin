@@ -51,14 +51,9 @@ export const predicate = ({ links }: PredicateProps) => {
 
 const TraceMonitorRoute = ({ links }) => {
   return (
-    <>
-      <Route
-        path="/admin/trace-monitor"
-        component={() => (
-          <TraceMonitor traceMonitorLink={links.traceMonitor.href} categoriesLink={links.traceMonitorCategories.href} />
-        )}
-      />
-    </>
+    <Route path="/admin/trace-monitor">
+      <TraceMonitor traceMonitorLink={links.traceMonitor.href} categoriesLink={links.traceMonitorCategories.href} />
+    </Route>
   );
 };
 
