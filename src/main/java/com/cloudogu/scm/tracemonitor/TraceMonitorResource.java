@@ -100,7 +100,7 @@ public class TraceMonitorResource {
   public TraceMonitorResultDto get(
     @DefaultValue("") @QueryParam("category") String category,
     @QueryParam("onlyFailed") boolean onlyFailed,
-    @DefaultValue("5") @QueryParam("limit") int limit
+    @DefaultValue("50") @QueryParam("limit") int limit
   ) {
     Stream<SpanContextDto> dtos;
     Stream<SpanContext> spanContexts;
