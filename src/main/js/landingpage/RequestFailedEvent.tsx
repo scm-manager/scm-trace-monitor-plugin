@@ -28,14 +28,14 @@ import { CardColumnSmall, DateFromNow, Icon } from "@scm-manager/ui-components";
 const RequestFailedEvent = ({ event }) => {
   const [t] = useTranslation("plugins");
   const link = `/admin/trace-monitor`;
-  const icon = <Icon name="envelope fa-fw fa-2x" color="inherit" />;
+  const icon = <Icon name="envelope" className="fa-fw fa-lg" color="inherit" />;
 
   return (
     <CardColumnSmall
       link={link}
       avatar={icon}
       contentLeft={<strong>{t("scm-trace-monitor-plugin.landingpage.requestFailed.header")}</strong>}
-      contentRight={<DateFromNow date={event.date} />}
+      contentRight={<small><DateFromNow date={event.date} /></small>}
       footer={t("scm-trace-monitor-plugin.landingpage.requestFailed.category", {
         ...event.context
       })}
