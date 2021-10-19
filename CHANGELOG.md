@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Changed
+- Add tabulator stops for trace monitor view ([#6](https://github.com/scm-manager/scm-trace-monitor-plugin/pull/6))
+
 ## 1.0.3 - 2021-04-28
 ### Fixed
 - Set default limit for entries back to 50

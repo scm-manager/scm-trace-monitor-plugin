@@ -64,6 +64,7 @@ const TableActions = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   .field:not(:last-child) {
     margin-bottom: 0;
   }
@@ -79,13 +80,13 @@ type Props = {
 };
 
 const TraceMonitorTable: FC<Props> = ({
-  spans,
-  statusFilter,
-  changeStatusFilter,
-  categoryFilter,
-  changeCategoryFilter,
-  categories
-}) => {
+                                        spans,
+                                        statusFilter,
+                                        changeStatusFilter,
+                                        categoryFilter,
+                                        changeCategoryFilter,
+                                        categories
+                                      }) => {
   const [t] = useTranslation("plugins");
   const [searchFilter, setSearchFilter] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -187,7 +188,8 @@ const TraceMonitorTable: FC<Props> = ({
           {row => convertMillisToString(row.durationInMillis)}
         </Column>
         <Column header="">
-          {row => <a onClick={() => openModal(row)}>{t("scm-trace-monitor-plugin.table.details")}</a>}
+          {row => <a onClick={() => openModal(row)} tabIndex={0}
+                     onKeyDown={e => e.key === "Enter" && openModal(row)}>{t("scm-trace-monitor-plugin.table.details")}</a>}
         </Column>
       </Table>
     </>
