@@ -1,7 +1,7 @@
 {
     "name": "@scm-manager/scm-trace-monitor-plugin",
     "private": true,
-    "version": "1.0.4",
+    "version": "1.0.5-SNAPSHOT",
     "license": "MIT",
     "main": "./src/main/js/index.tsx",
     "scripts": {
