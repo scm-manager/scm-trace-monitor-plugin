@@ -1,0 +1,2 @@
+- type: fixed
+  description: Replace <a> tag by <button> ([#8](https://github.com/scm-manager/scm-trace-monitor-plugin/pull/8))
