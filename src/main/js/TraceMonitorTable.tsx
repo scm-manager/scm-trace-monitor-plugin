@@ -23,15 +23,16 @@
  */
 import React, { FC, useState } from "react";
 import {
+  Checkbox,
   Column,
   comparators,
+  FilterInput,
   Icon,
-  Table,
-  TextColumn,
-  Checkbox,
+  NoStyleButton,
   Select,
   SelectItem,
-  FilterInput
+  Table,
+  TextColumn
 } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import { Span } from "./TraceMonitor";
@@ -188,8 +189,12 @@ const TraceMonitorTable: FC<Props> = ({
           {row => convertMillisToString(row.durationInMillis)}
         </Column>
         <Column header="">
-          {row => <a onClick={() => openModal(row)} tabIndex={0}
-                     onKeyDown={e => e.key === "Enter" && openModal(row)}>{t("scm-trace-monitor-plugin.table.details")}</a>}
+          {row => (
+            <NoStyleButton className={"has-text-info is-hovered"} onClick={() => openModal(row)} tabIndex={0}
+                           onKeyDown={e => e.key === "Enter" && openModal(row)}>
+              {t("scm-trace-monitor-plugin.table.details")}
+            </NoStyleButton>
+          )}
         </Column>
       </Table>
     </>
