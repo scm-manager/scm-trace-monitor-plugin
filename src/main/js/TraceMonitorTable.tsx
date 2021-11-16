@@ -81,20 +81,20 @@ type Props = {
 };
 
 const TraceMonitorTable: FC<Props> = ({
-                                        spans,
-                                        statusFilter,
-                                        changeStatusFilter,
-                                        categoryFilter,
-                                        changeCategoryFilter,
-                                        categories
-                                      }) => {
+  spans,
+  statusFilter,
+  changeStatusFilter,
+  categoryFilter,
+  changeCategoryFilter,
+  categories
+}) => {
   const [t] = useTranslation("plugins");
   const [searchFilter, setSearchFilter] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [modalData, setModalData] = useState<Span | undefined>();
 
   const createCategoryFilterOptions = () => {
-    let filterCategories: SelectItem[] = [];
+    const filterCategories: SelectItem[] = [];
     filterCategories.push({ label: t("scm-trace-monitor-plugin.tableActions.all"), value: "ALL" });
     categories.forEach(category => filterCategories.push({ label: category, value: category }));
     return filterCategories;
@@ -126,8 +126,8 @@ const TraceMonitorTable: FC<Props> = ({
 
   const filteredSpans = () => {
     if (searchFilter) {
-      let filtered: Span[] = [];
-      for (let span of spans) {
+      const filtered: Span[] = [];
+      for (const span of spans) {
         let add = false;
         if (span.labels) {
           add = Object.values(span.labels).some((value: any) => value.includes(searchFilter));
@@ -190,8 +190,12 @@ const TraceMonitorTable: FC<Props> = ({
         </Column>
         <Column header="">
           {row => (
-            <NoStyleButton className={"has-text-info is-hovered"} onClick={() => openModal(row)} tabIndex={0}
-                           onKeyDown={e => e.key === "Enter" && openModal(row)}>
+            <NoStyleButton
+              className={"has-text-info is-hovered"}
+              onClick={() => openModal(row)}
+              tabIndex={0}
+              onKeyDown={e => e.key === "Enter" && openModal(row)}
+            >
               {t("scm-trace-monitor-plugin.table.details")}
             </NoStyleButton>
           )}
