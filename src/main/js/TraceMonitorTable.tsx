@@ -22,10 +22,13 @@
  * SOFTWARE.
  */
 import React, { FC, useState } from "react";
+import { useTranslation } from "react-i18next";
+import styled from "styled-components";
 import {
   Checkbox,
   Column,
   comparators,
+  devices,
   FilterInput,
   Icon,
   NoStyleButton,
@@ -34,9 +37,7 @@ import {
   Table,
   TextColumn
 } from "@scm-manager/ui-components";
-import { useTranslation } from "react-i18next";
 import { Span } from "./TraceMonitor";
-import styled from "styled-components";
 import SpanDetailsModal from "./SpanDetailsModal";
 import { convertMillisToString, formatAsTimestamp } from "./time";
 
@@ -50,6 +51,11 @@ const Level = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
+
+  @media screen and (max-width: ${devices.mobile.width}px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 `;
 
 const FlexColumn = styled.div`
@@ -68,6 +74,15 @@ const TableActions = styled.div`
   .field:not(:last-child) {
     margin-bottom: 0;
   }
+
+  @media screen and (max-width: ${devices.desktop.width - 1}px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+`;
+
+const ScrollableTable = styled.div`
+  overflow-x: auto;
 `;
 
 type Props = {
@@ -93,7 +108,7 @@ const TraceMonitorTable: FC<Props> = ({
   const [modalData, setModalData] = useState<Span | undefined>();
 
   const createCategoryFilterOptions = () => {
-    let filterCategories: SelectItem[] = [];
+    const filterCategories: SelectItem[] = [];
     filterCategories.push({ label: t("scm-trace-monitor-plugin.tableActions.all"), value: "ALL" });
     categories.forEach(category => filterCategories.push({ label: category, value: category }));
     return filterCategories;
@@ -125,8 +140,8 @@ const TraceMonitorTable: FC<Props> = ({
 
   const filteredSpans = () => {
     if (searchFilter) {
-      let filtered: Span[] = [];
-      for (let span of spans) {
+      const filtered: Span[] = [];
+      for (const span of spans) {
         let add = false;
         if (span.labels) {
           add = Object.values(span.labels).some((value: any) => value.includes(searchFilter));
@@ -149,52 +164,54 @@ const TraceMonitorTable: FC<Props> = ({
     <>
       {showModal && <SpanDetailsModal onClose={() => setShowModal(false)} modalData={modalData} active={showModal} />}
       {tableActions}
-      <Table data={filteredSpans()} emptyMessage={t("scm-trace-monitor-plugin.table.emptyMessage")}>
-        <TextColumn header={t("scm-trace-monitor-plugin.table.column.kind")} dataKey="kind" />
-        <Column
-          header={t("scm-trace-monitor-plugin.table.column.status")}
-          createComparator={() => comparators.byKey("failed")}
-          ascendingIcon="sort"
-          descendingIcon="sort"
-        >
-          {row =>
-            row.failed ? (
-              <>
-                <Icon color="danger" name="exclamation-triangle" />
-                {" " + t("scm-trace-monitor-plugin.table.failed")}
-              </>
-            ) : (
-              <>
-                <Icon color="success" name="check-circle" iconStyle="far" />
-                {" " + t("scm-trace-monitor-plugin.table.success")}
-              </>
-            )
-          }
-        </Column>
-        <Column
-          header={t("scm-trace-monitor-plugin.table.column.timestamp")}
-          createComparator={() => comparators.byKey("opened")}
-          ascendingIcon="sort"
-          descendingIcon="sort"
-        >
-          {row => formatAsTimestamp(row)}
-        </Column>
-        <Column
-          header={t("scm-trace-monitor-plugin.table.column.duration")}
-          createComparator={() => comparators.byKey("durationInMillis")}
-          ascendingIcon="sort"
-          descendingIcon="sort"
-        >
-          {row => convertMillisToString(row.durationInMillis)}
-        </Column>
-        <Column header="">
-          {row => (
-            <NoStyleButton className={"has-text-info is-hovered"} onClick={() => openModal(row)}>
-              {t("scm-trace-monitor-plugin.table.details")}
-            </NoStyleButton>
-          )}
-        </Column>
-      </Table>
+      <ScrollableTable>
+        <Table data={filteredSpans()} emptyMessage={t("scm-trace-monitor-plugin.table.emptyMessage")}>
+          <TextColumn header={t("scm-trace-monitor-plugin.table.column.kind")} dataKey="kind" />
+          <Column
+            header={t("scm-trace-monitor-plugin.table.column.status")}
+            createComparator={() => comparators.byKey("failed")}
+            ascendingIcon="sort"
+            descendingIcon="sort"
+          >
+            {row =>
+              row.failed ? (
+                <>
+                  <Icon color="danger" name="exclamation-triangle" />
+                  {" " + t("scm-trace-monitor-plugin.table.failed")}
+                </>
+              ) : (
+                <>
+                  <Icon color="success" name="check-circle" iconStyle="far" />
+                  {" " + t("scm-trace-monitor-plugin.table.success")}
+                </>
+              )
+            }
+          </Column>
+          <Column
+            header={t("scm-trace-monitor-plugin.table.column.timestamp")}
+            createComparator={() => comparators.byKey("opened")}
+            ascendingIcon="sort"
+            descendingIcon="sort"
+          >
+            {row => formatAsTimestamp(row)}
+          </Column>
+          <Column
+            header={t("scm-trace-monitor-plugin.table.column.duration")}
+            createComparator={() => comparators.byKey("durationInMillis")}
+            ascendingIcon="sort"
+            descendingIcon="sort"
+          >
+            {row => convertMillisToString(row.durationInMillis)}
+          </Column>
+          <Column header="">
+            {row => (
+              <NoStyleButton className={"has-text-info is-hovered"} onClick={() => openModal(row)}>
+                {t("scm-trace-monitor-plugin.table.details")}
+              </NoStyleButton>
+            )}
+          </Column>
+        </Table>
+      </ScrollableTable>
     </>
   );
 };
