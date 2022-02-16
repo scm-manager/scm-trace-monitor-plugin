@@ -81,7 +81,7 @@ const TableActions = styled.div`
   }
 `;
 
-const ScrollableTable = styled.div`
+const ScrollableViewport = styled.div`
   overflow-x: auto;
 `;
 
@@ -144,7 +144,7 @@ const TraceMonitorTable: FC<Props> = ({
       for (const span of spans) {
         let add = false;
         if (span.labels) {
-          add = Object.values(span.labels).some((value: any) => value.includes(searchFilter));
+          add = Object.values(span.labels).some(value => value.includes(searchFilter));
         }
         if (add) {
           filtered.push(span);
@@ -164,7 +164,7 @@ const TraceMonitorTable: FC<Props> = ({
     <>
       {showModal && <SpanDetailsModal onClose={() => setShowModal(false)} modalData={modalData} active={showModal} />}
       {tableActions}
-      <ScrollableTable>
+      <ScrollableViewport>
         <Table data={filteredSpans()} emptyMessage={t("scm-trace-monitor-plugin.table.emptyMessage")}>
           <TextColumn header={t("scm-trace-monitor-plugin.table.column.kind")} dataKey="kind" />
           <Column
@@ -211,7 +211,7 @@ const TraceMonitorTable: FC<Props> = ({
             )}
           </Column>
         </Table>
-      </ScrollableTable>
+      </ScrollableViewport>
     </>
   );
 };
