@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.0.6 - 2022-02-18
+### Fixed
+- Correct behavior of table and actions on mobile pages ([#9](https://github.com/scm-manager/scm-trace-monitor-plugin/pull/9))
+
 ## 1.0.5 - 2021-11-04
 ### Fixed
 - Replace <a> tag by <button> ([#8](https://github.com/scm-manager/scm-trace-monitor-plugin/pull/8))
