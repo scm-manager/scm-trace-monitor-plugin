@@ -26,8 +26,8 @@ import { binder } from "@scm-manager/ui-extensions";
 import { ConfigurationBinder as cfgBinder } from "@scm-manager/ui-components";
 import GlobalTraceMonitorConfiguration from "./config/GlobalTraceMonitorConfiguration";
 import RequestFailedEvent from "./landingpage/RequestFailedEvent";
-import { Route } from "react-router-dom";
-import React from "react";
+import { Route, Switch } from "react-router-dom";
+import React, { FC } from "react";
 import TraceMonitorNavigation from "./TraceMonitorNavigation";
 import { Links } from "@scm-manager/ui-types";
 import TraceMonitor from "./TraceMonitor";
@@ -49,14 +49,18 @@ export const predicate = ({ links }: PredicateProps) => {
   return !!(links && links.traceMonitor);
 };
 
-const TraceMonitorRoute = ({ links }) => {
+const TraceMonitorRoute: FC<{ links: Links }> = ({ links }) => {
   return (
-    <Route path="/admin/trace-monitor">
-      <TraceMonitor traceMonitorLink={links.traceMonitor.href} categoriesLink={links.traceMonitorCategories.href} />
-    </Route>
+    <Switch>
+      <Route path="/admin/trace-monitor/" exact>
+        <TraceMonitor links={links} />
+      </Route>
+      <Route path="/admin/trace-monitor/:page" exact>
+        <TraceMonitor links={links} />
+      </Route>
+    </Switch>
   );
 };
 
 binder.bind("admin.route", TraceMonitorRoute, predicate);
-
 binder.bind("admin.navigation", TraceMonitorNavigation, predicate);

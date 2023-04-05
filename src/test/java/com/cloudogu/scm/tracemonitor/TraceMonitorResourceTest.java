@@ -51,7 +51,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
@@ -140,7 +139,11 @@ class TraceMonitorResourceTest {
     dispatcher.invoke(request, response);
 
     assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
-    assertThat(response.getContentAsString()).contains("{\"spans\":[],\"_links\":{\"self\":{\"href\":\"hitchhiker.org/scm/v2/trace-monitor/\"}}}");
+    assertThat(response.getContentAsString()).contains("\"spans\":[]");
+    assertThat(response.getContentAsString()).contains("\"page\":0");
+    assertThat(response.getContentAsString()).contains("\"pageSize\":100");
+    assertThat(response.getContentAsString()).contains("\"pageTotal\":0");
+    assertThat(response.getContentAsString()).contains("\"_links\":{\"self\":{\"href\":\"hitchhiker.org/scm/v2/trace-monitor/?page=1\"},\"first\":{\"href\":\"hitchhiker.org/scm/v2/trace-monitor/?page=1\"},\"last\":{\"href\":\"hitchhiker.org/scm/v2/trace-monitor/?page=1\"}}");
   }
 
   @Test
@@ -199,6 +202,29 @@ class TraceMonitorResourceTest {
     assertThat(response.getContentAsString()).contains("\"failed\":true");
     assertThat(response.getContentAsString()).doesNotContain("\"durationInMillis\":89");
     assertThat(response.getContentAsString()).doesNotContain("\"failed\":false");
+  }
+
+  @Test
+  void shouldGetSpansOnSpecificPage() throws UnsupportedEncodingException, URISyntaxException {
+    List<SpanContext> contexts = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      SpanContext span = new SpanContext("Jenkins", ImmutableMap.of("url", "hitchhiker.org/jenkins"), Instant.ofEpochMilli(i), Instant.ofEpochMilli(i).plusMillis(i), true);
+      contexts.add(span);
+      lenient().when(mapper.map(span)).thenReturn(new SpanContextDto("Jenkins", ImmutableMap.of("url", "hitchhiker.org/jenkins"), Instant.ofEpochMilli(i), Instant.ofEpochMilli(i).plusMillis(i), i, true));
+    }
+    when(store.getAll()).thenReturn(contexts);
+
+    MockHttpRequest request = MockHttpRequest.get("/" + TraceMonitorResource.TRACE_MONITOR_PATH + "?limit=10&page=3");
+    MockHttpResponse response = new MockHttpResponse();
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
+    assertThat(response.getContentAsString()).contains("\"kind\":\"Jenkins\"");
+    assertThat(response.getContentAsString()).contains("\"durationInMillis\":79");
+    assertThat(response.getContentAsString()).contains("\"durationInMillis\":70");
+    assertThat(response.getContentAsString()).doesNotContain("\"durationInMillis\":80");
+    assertThat(response.getContentAsString()).doesNotContain("\"durationInMillis\":69");
   }
 
 

@@ -22,78 +22,43 @@
  * SOFTWARE.
  */
 import React, { FC, useEffect, useState } from "react";
-import { apiClient, ErrorNotification, Loading, Title, Subtitle } from "@scm-manager/ui-components";
-import TraceMonitorTable from "./TraceMonitorTable";
 import { useTranslation } from "react-i18next";
+import { Redirect, useHistory, useLocation, useRouteMatch } from "react-router-dom";
+import { Links } from "@scm-manager/ui-types";
+import { ErrorNotification, Loading, Title, Subtitle, urls, LinkPaginator } from "@scm-manager/ui-components";
+import TraceMonitorTable from "./TraceMonitorTable";
+import { useTraceMonitor, useTraceMonitorCategories, useTraceMonitorConfig } from "./useTraceMonitor";
 
-export type Span = {
-  kind: string;
-  opened: Date;
-  closed: Date;
-  durationInMillis: number;
-  labels: { [key: string]: string };
-  failed: boolean;
-};
-
-type Props = {
-  traceMonitorLink: string;
-  categoriesLink: string;
-};
-
-const TraceMonitor: FC<Props> = ({ traceMonitorLink, categoriesLink }) => {
-  const [spans, setSpans] = useState<Span[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [onlyFailedFilter, setOnlyFailedFilter] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | undefined>();
+const TraceMonitor: FC<{ links: Links }> = () => {
   const [t] = useTranslation("plugins");
+  const match = useRouteMatch();
+  const location = useLocation();
+  const history = useHistory();
+  const page = urls.getPageFromMatch(match);
+  const [categoryFilter, setCategoryFilter] = useState("ALL");
+  const [onlyFailedFilter, setOnlyFailedFilter] = useState(false);
+  const { data, error, isLoading } = useTraceMonitor(page, categoryFilter, onlyFailedFilter);
+  const { data: categories, error: categoriesError, isLoading: categoriesLoading } = useTraceMonitorCategories();
+  const { data: config, error: configError, isLoading: configLoading } = useTraceMonitorConfig();
 
   useEffect(() => {
-    apiClient
-      .get(createUrl())
-      .then(r => r.json())
-      .then(r => r.spans)
-      .then(setSpans)
-      .then(() => setLoading(false))
-      .catch(setError);
+    let pathname = location.pathname;
+    if (!pathname.endsWith("/")) {
+      pathname = pathname.substring(0, pathname.lastIndexOf("/") + 1);
+    }
+    history.push(pathname);
   }, [categoryFilter, onlyFailedFilter]);
 
-  useEffect(() => {
-    apiClient
-      .get(categoriesLink)
-      .then(r => r.json())
-      .then(r => r.categories)
-      .then(setCategories)
-      .catch(setError);
-  }, []);
-
-  const createUrl = () => {
-    let url = traceMonitorLink;
-    if (!categoryFilter && !onlyFailedFilter) {
-      return url;
-    }
-
-    url += `?`;
-    if (categoryFilter && categoryFilter !== "ALL") {
-      url += `category=${categoryFilter}`;
-    }
-    if (onlyFailedFilter) {
-      if (categoryFilter) {
-        url += "&";
-      }
-      url += `onlyFailed=true`;
-    }
-
-    return url;
-  };
-
-  if (error) {
+  if (error || categoriesError || configError) {
     return <ErrorNotification error={error} />;
   }
 
-  if (loading) {
+  if (isLoading || categoriesLoading || configLoading || !data || !categories || !config) {
     return <Loading />;
+  }
+
+  if (data && data.pageTotal < page && page > 1) {
+    return <Redirect to={`/admin/trace-monitor/${data.pageTotal}`} />;
   }
 
   return (
@@ -101,13 +66,15 @@ const TraceMonitor: FC<Props> = ({ traceMonitorLink, categoriesLink }) => {
       <Title title={t("scm-trace-monitor-plugin.title")} />
       <Subtitle subtitle={t("scm-trace-monitor-plugin.subtitle")} />
       <TraceMonitorTable
-        spans={spans}
+        spans={data.spans}
         categoryFilter={categoryFilter}
         changeCategoryFilter={setCategoryFilter}
         statusFilter={onlyFailedFilter}
         changeStatusFilter={setOnlyFailedFilter}
-        categories={categories}
+        categories={categories.categories}
       />
+      <hr />
+      <LinkPaginator collection={data} page={page} />
     </>
   );
 };

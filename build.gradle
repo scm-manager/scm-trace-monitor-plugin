@@ -23,7 +23,7 @@
  */
 
 plugins {
-  id 'org.scm-manager.smp' version '0.10.1'
+  id 'org.scm-manager.smp' version '0.15.0'
 }
 
 dependencies {
@@ -31,7 +31,7 @@ dependencies {
 }
 
 scmPlugin {
-  scmVersion = "2.25.0"
+  scmVersion = "2.42.4-SNAPSHOT"
 
   displayName = "Trace Monitor"
   description = "Traces requests outgoing from SCM-Manager"

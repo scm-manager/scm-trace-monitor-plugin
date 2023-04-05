@@ -27,6 +27,8 @@ package com.cloudogu.scm.tracemonitor;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
+import de.otto.edison.hal.paging.NumberedPaging;
+import de.otto.edison.hal.paging.PagingRel;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -47,10 +49,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.damnhandy.uri.template.UriTemplate.fromTemplate;
+import static de.otto.edison.hal.Links.linkingTo;
+import static de.otto.edison.hal.paging.NumberedPaging.oneBasedNumberedPaging;
 import static com.cloudogu.scm.tracemonitor.TraceMonitorResource.TRACE_MONITOR_PATH;
 
 @Path(TRACE_MONITOR_PATH)
@@ -100,7 +106,8 @@ public class TraceMonitorResource {
   public TraceMonitorResultDto get(
     @DefaultValue("") @QueryParam("category") String category,
     @QueryParam("onlyFailed") boolean onlyFailed,
-    @DefaultValue("50") @QueryParam("limit") int limit
+    @DefaultValue("1") @QueryParam("page") int page,
+    @DefaultValue("100") @QueryParam("limit") int limit
   ) {
     Stream<SpanContextDto> dtos;
     Stream<SpanContext> spanContexts;
@@ -115,14 +122,13 @@ public class TraceMonitorResource {
       dtos = filterForFailedSpans(dtos);
     }
 
-    dtos = limitSpans(limit, dtos);
+    Collection<SpanContextDto> spans = dtos.collect(Collectors.toList());
+    int totalEntries = spans.size();
+    NumberedPaging paging = oneBasedNumberedPaging(page, limit, totalEntries);
+    int totalPages = computeTotalPages(paging.getPageSize(), totalEntries);
 
-    final String selfLink = new LinkBuilder(scmPathInfo.get().get(), TraceMonitorResource.class).method("get").parameters().href();
-    return new TraceMonitorResultDto(new Links.Builder().self(selfLink).build(), dtos.collect(Collectors.toList()));
-  }
-
-  private Stream<SpanContextDto> limitSpans(int limit, Stream<SpanContextDto> dtos) {
-    return dtos.limit(limit);
+    spans = skipAndlimitSpans(paging.getPageNumber(), paging.getPageSize(), spans);
+    return new TraceMonitorResultDto(createLinks(paging), spans, paging.getPageNumber() - 1, paging.getPageSize(), totalPages);
   }
 
   private Stream<SpanContext> sortByTimestamp(Collection<SpanContext> spanContexts) {
@@ -137,6 +143,33 @@ public class TraceMonitorResource {
 
   private Stream<SpanContextDto> mapSpanContextCollectionToTraceMonitorResultDto(Stream<SpanContext> spans) {
     return spans.map(mapper::map);
+  }
+
+  private Collection<SpanContextDto> skipAndlimitSpans(int page, int pageSize, Collection<SpanContextDto> spans) {
+    return spans.stream().skip((long) (page - 1) * pageSize).limit(pageSize).collect(Collectors.toList());
+  }
+
+  private int computeTotalPages(int pageSize, int totalEntries) {
+    if (totalEntries % pageSize > 0) {
+      return totalEntries / pageSize + 1;
+    } else {
+      return totalEntries / pageSize;
+    }
+  }
+
+  private Links createLinks(NumberedPaging page) {
+    LinkBuilder linkBuilder = new LinkBuilder(scmPathInfo.get().get(), TraceMonitorResource.class);
+
+    String selfLink = linkBuilder
+      .method("get")
+      .parameters(String.valueOf(page.getPageNumber() - 1), String.valueOf(page.getPageSize()), "")
+      .href();
+
+    Links.Builder linksBuilder = linkingTo()
+      .with(page.links(
+        fromTemplate(selfLink + "{?page,limit}"),
+        EnumSet.allOf(PagingRel.class)));
+    return linksBuilder.build();
   }
 
   @GET
@@ -174,18 +207,6 @@ public class TraceMonitorResource {
       .distinct()
       .collect(Collectors.toList());
     return new AvailableCategoriesDto(new Links.Builder().self(selfLink).build(), categories);
-  }
-
-  private List<SpanContextDto> filterForFailedSpans(Collection<SpanContextDto> spanContextDtos) {
-    return spanContextDtos.stream()
-      .filter(SpanContextDto::isFailed)
-      .collect(Collectors.toList());
-  }
-
-  private List<SpanContextDto> mapSpanContextCollectionToTraceMonitorResultDto(Collection<SpanContext> spans) {
-    return spans.stream()
-      .map(mapper::map)
-      .collect(Collectors.toList());
   }
 
   @Getter

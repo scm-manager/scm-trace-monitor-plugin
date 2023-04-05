@@ -35,9 +35,15 @@ import java.util.Collection;
 @SuppressWarnings("java:S2160") // we do not need equals and hashcode for dto`s
 public class TraceMonitorResultDto extends HalRepresentation {
   private final Collection<SpanContextDto> spans;
+  private int page;
+  private int pageSize;
+  private int pageTotal;
 
-  public TraceMonitorResultDto(Links links, Collection<SpanContextDto> spans) {
+  public TraceMonitorResultDto(Links links, Collection<SpanContextDto> spans, int page, int pageSize, int pageTotal) {
     super(links);
     this.spans = spans;
+    this.page = page;
+    this.pageSize = pageSize;
+    this.pageTotal = pageTotal;
   }
 }

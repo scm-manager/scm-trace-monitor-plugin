@@ -37,7 +37,7 @@ import {
   Table,
   TextColumn
 } from "@scm-manager/ui-components";
-import { Span } from "./TraceMonitor";
+import { Span } from "./useTraceMonitor";
 import SpanDetailsModal from "./SpanDetailsModal";
 import { convertMillisToString, formatAsTimestamp } from "./time";
 
