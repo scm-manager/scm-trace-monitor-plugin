@@ -27,7 +27,7 @@ import { Redirect, useHistory, useLocation, useRouteMatch } from "react-router-d
 import { Links } from "@scm-manager/ui-types";
 import { ErrorNotification, Loading, Title, Subtitle, urls, LinkPaginator } from "@scm-manager/ui-components";
 import TraceMonitorTable from "./TraceMonitorTable";
-import { useTraceMonitor, useTraceMonitorCategories, useTraceMonitorConfig } from "./useTraceMonitor";
+import { useTraceMonitor, useTraceMonitorCategories } from "./useTraceMonitor";
 
 const TraceMonitor: FC<{ links: Links }> = () => {
   const [t] = useTranslation("plugins");
@@ -39,7 +39,6 @@ const TraceMonitor: FC<{ links: Links }> = () => {
   const [onlyFailedFilter, setOnlyFailedFilter] = useState(false);
   const { data, error, isLoading } = useTraceMonitor(page, categoryFilter, onlyFailedFilter);
   const { data: categories, error: categoriesError, isLoading: categoriesLoading } = useTraceMonitorCategories();
-  const { data: config, error: configError, isLoading: configLoading } = useTraceMonitorConfig();
 
   useEffect(() => {
     let pathname = location.pathname;
@@ -49,11 +48,11 @@ const TraceMonitor: FC<{ links: Links }> = () => {
     history.push(pathname);
   }, [categoryFilter, onlyFailedFilter]);
 
-  if (error || categoriesError || configError) {
+  if (error || categoriesError) {
     return <ErrorNotification error={error} />;
   }
 
-  if (isLoading || categoriesLoading || configLoading || !data || !categories || !config) {
+  if (isLoading || categoriesLoading || !data || !categories) {
     return <Loading />;
   }
 
