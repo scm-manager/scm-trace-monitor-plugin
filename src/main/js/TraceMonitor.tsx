@@ -28,6 +28,7 @@ import { Links } from "@scm-manager/ui-types";
 import { ErrorNotification, Loading, Title, Subtitle, urls, LinkPaginator } from "@scm-manager/ui-components";
 import TraceMonitorTable from "./TraceMonitorTable";
 import { useTraceMonitor, useTraceMonitorCategories } from "./useTraceMonitor";
+import TraceMonitorTableActions from "./TraceMonitorTableActions";
 
 const TraceMonitor: FC<{ links: Links }> = () => {
   const [t] = useTranslation("plugins");
@@ -37,7 +38,8 @@ const TraceMonitor: FC<{ links: Links }> = () => {
   const page = urls.getPageFromMatch(match);
   const [categoryFilter, setCategoryFilter] = useState("ALL");
   const [onlyFailedFilter, setOnlyFailedFilter] = useState(false);
-  const { data, error, isLoading } = useTraceMonitor(page, categoryFilter, onlyFailedFilter);
+  const [searchFilter, setSearchFilter] = useState("");
+  const { data, error, isLoading } = useTraceMonitor(page, categoryFilter, onlyFailedFilter, searchFilter);
   const { data: categories, error: categoriesError, isLoading: categoriesLoading } = useTraceMonitorCategories();
 
   useEffect(() => {
@@ -64,14 +66,17 @@ const TraceMonitor: FC<{ links: Links }> = () => {
     <>
       <Title title={t("scm-trace-monitor-plugin.title")} />
       <Subtitle subtitle={t("scm-trace-monitor-plugin.subtitle")} />
-      <TraceMonitorTable
-        spans={data.spans}
+      <TraceMonitorTableActions
+        key="actions"
         categoryFilter={categoryFilter}
         changeCategoryFilter={setCategoryFilter}
         statusFilter={onlyFailedFilter}
         changeStatusFilter={setOnlyFailedFilter}
         categories={categories.categories}
+        searchFilter={searchFilter}
+        setSearchFilter={setSearchFilter}
       />
+      <TraceMonitorTable spans={data.spans} />
       <hr />
       <LinkPaginator collection={data} page={page} />
     </>

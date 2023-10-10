@@ -24,62 +24,10 @@
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
-import {
-  Checkbox,
-  Column,
-  comparators,
-  devices,
-  FilterInput,
-  Icon,
-  NoStyleButton,
-  Select,
-  SelectItem,
-  Table,
-  TextColumn
-} from "@scm-manager/ui-components";
+import { Column, comparators, Icon, NoStyleButton, Table, TextColumn } from "@scm-manager/ui-components";
 import { Span } from "./useTraceMonitor";
 import SpanDetailsModal from "./SpanDetailsModal";
 import { convertMillisToString, formatAsTimestamp } from "./time";
-
-const FilterLabel = styled.span`
-  color: #9a9a9a;
-  margin: 0 0.5rem;
-  word-break: keep-all;
-`;
-
-const Level = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-
-  @media screen and (max-width: ${devices.mobile.width}px) {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-`;
-
-const FlexColumn = styled.div`
-  flex-grow: 0;
-  flex-basis: auto;
-`;
-
-const FlexNoneColumn = styled.div`
-  flex: none;
-`;
-
-const TableActions = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  .field:not(:last-child) {
-    margin-bottom: 0;
-  }
-
-  @media screen and (max-width: ${devices.desktop.width - 1}px) {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-`;
 
 const ScrollableViewport = styled.div`
   overflow-x: auto;
@@ -87,73 +35,12 @@ const ScrollableViewport = styled.div`
 
 type Props = {
   spans: Span[];
-  categories: string[];
-  categoryFilter: string;
-  changeCategoryFilter: (category: string) => void;
-  statusFilter: boolean;
-  changeStatusFilter: (status: boolean) => void;
 };
 
-const TraceMonitorTable: FC<Props> = ({
-  spans,
-  statusFilter,
-  changeStatusFilter,
-  categoryFilter,
-  changeCategoryFilter,
-  categories
-}) => {
+const TraceMonitorTable: FC<Props> = ({ spans }) => {
   const [t] = useTranslation("plugins");
-  const [searchFilter, setSearchFilter] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [modalData, setModalData] = useState<Span | undefined>();
-
-  const createCategoryFilterOptions = () => {
-    const filterCategories: SelectItem[] = [];
-    filterCategories.push({ label: t("scm-trace-monitor-plugin.tableActions.all"), value: "ALL" });
-    categories.forEach(category => filterCategories.push({ label: category, value: category }));
-    return filterCategories;
-  };
-
-  const tableActions = (
-    <TableActions className="columns column is-mobile-action-spacing is-clipped">
-      <FlexColumn className="column is-flex">
-        <Checkbox
-          checked={statusFilter}
-          label={t("scm-trace-monitor-plugin.tableActions.statusFilter")}
-          onChange={changeStatusFilter}
-        />
-      </FlexColumn>
-      <FlexNoneColumn className="column is-centered is-flex">
-        <Level>
-          <FilterLabel>{t("scm-trace-monitor-plugin.tableActions.categoryFilter")}</FilterLabel>
-          <Select value={categoryFilter} options={createCategoryFilterOptions()} onChange={changeCategoryFilter} />
-        </Level>
-      </FlexNoneColumn>
-      <div className="column is-flex">
-        <Level>
-          <FilterLabel>{t("scm-trace-monitor-plugin.tableActions.searchFilter")}</FilterLabel>
-          <FilterInput value={searchFilter} filter={setSearchFilter} placeholder="" />
-        </Level>
-      </div>
-    </TableActions>
-  );
-
-  const filteredSpans = () => {
-    if (searchFilter) {
-      const filtered: Span[] = [];
-      for (const span of spans) {
-        let add = false;
-        if (span.labels) {
-          add = Object.values(span.labels).some(value => value.includes(searchFilter));
-        }
-        if (add) {
-          filtered.push(span);
-        }
-      }
-      return filtered;
-    }
-    return spans;
-  };
 
   const openModal = (span: Span) => {
     setModalData(span);
@@ -163,9 +50,8 @@ const TraceMonitorTable: FC<Props> = ({
   return (
     <>
       {showModal && <SpanDetailsModal onClose={() => setShowModal(false)} modalData={modalData} active={showModal} />}
-      {tableActions}
       <ScrollableViewport>
-        <Table data={filteredSpans()} emptyMessage={t("scm-trace-monitor-plugin.table.emptyMessage")}>
+        <Table data={spans} emptyMessage={t("scm-trace-monitor-plugin.table.emptyMessage")}>
           <TextColumn header={t("scm-trace-monitor-plugin.table.column.kind")} dataKey="kind" />
           <Column
             header={t("scm-trace-monitor-plugin.table.column.status")}

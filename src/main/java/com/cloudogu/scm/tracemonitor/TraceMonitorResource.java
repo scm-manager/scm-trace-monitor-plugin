@@ -107,7 +107,8 @@ public class TraceMonitorResource {
     @DefaultValue("") @QueryParam("category") String category,
     @QueryParam("onlyFailed") boolean onlyFailed,
     @DefaultValue("1") @QueryParam("page") int page,
-    @DefaultValue("100") @QueryParam("limit") int limit
+    @DefaultValue("100") @QueryParam("limit") int limit,
+    @DefaultValue("") @QueryParam("labelFilter") String labelFilter
   ) {
     Stream<SpanContextDto> dtos;
     Stream<SpanContext> spanContexts;
@@ -122,6 +123,10 @@ public class TraceMonitorResource {
       dtos = filterForFailedSpans(dtos);
     }
 
+    if (!Strings.isNullOrEmpty(labelFilter)) {
+      dtos = applyLabelFilter(labelFilter, dtos);
+    }
+
     Collection<SpanContextDto> spans = dtos.collect(Collectors.toList());
     int totalEntries = spans.size();
     NumberedPaging paging = oneBasedNumberedPaging(page, limit, totalEntries);
@@ -129,6 +134,12 @@ public class TraceMonitorResource {
 
     spans = skipAndlimitSpans(paging.getPageNumber(), paging.getPageSize(), spans);
     return new TraceMonitorResultDto(createLinks(paging), spans, paging.getPageNumber() - 1, paging.getPageSize(), totalPages);
+  }
+
+  private Stream<SpanContextDto> applyLabelFilter(String labelFilter, Stream<SpanContextDto> dtos) {
+    return dtos.filter(spanContextDto ->
+      spanContextDto.getLabels().values().stream().anyMatch(label -> label.contains(labelFilter))
+    );
   }
 
   private Stream<SpanContext> sortByTimestamp(Collection<SpanContext> spanContexts) {

@@ -27,8 +27,9 @@
     },
     "tableActions": {
       "statusFilter": "Nur fehlgeschlagene anzeigen",
-      "categoryFilter": "Nach Kategorie filtern",
-      "searchFilter": "Nach Label suchen",
+      "categoryFilter": "Kategorie Filter",
+      "searchFilter": "Label Filter",
+      "searchFilterHelp": "Der Suchfilter bezieht sich auf die Labels, die unter \"Details anzeigen\" an den gespeicherten Requests angegeben sind, z. B. URL, Methodenname, Fehlerbeschreibung oder eine Nachricht. Welche Labels an einem Request gesetzt sind, hängt von der Kategorie und der Implementierung des Requests ab.",
       "all": "Alle"
     },
     "modal": {

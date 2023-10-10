@@ -116,6 +116,20 @@ class TraceMonitorResourceTest {
   }
 
   @Test
+  void shouldOnlyGetFilteredSpans() throws UnsupportedEncodingException, URISyntaxException {
+    mockSpans(Optional.empty());
+
+    MockHttpRequest request = MockHttpRequest.get("/" + TraceMonitorResource.TRACE_MONITOR_PATH + "?labelFilter=redmi");
+    MockHttpResponse response = new MockHttpResponse();
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
+    assertThat(response.getContentAsString()).doesNotContain("\"kind\":\"Jenkins\"");
+    assertThat(response.getContentAsString()).contains("\"kind\":\"Redmine\"");
+  }
+
+  @Test
   void shouldOnlyGetSpansForCategory() throws UnsupportedEncodingException, URISyntaxException {
     mockSpans(Optional.of("Redmine"));
 

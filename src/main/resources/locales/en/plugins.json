@@ -27,8 +27,9 @@
     },
     "tableActions": {
       "statusFilter": "Show only failed requests",
-      "categoryFilter": "Filter Categories",
-      "searchFilter": "Search for Label",
+      "categoryFilter": "Category Filter",
+      "searchFilter": "Label Filter",
+      "searchFilterHelp": "The search filter refers to the labels specified on the stored requests shown in the \"Show details\", e.g. URL, method name, exceptions or a message. Which labels are set on a request depends on the category and the implementation of the request.",
       "all": "All"
     },
     "modal": {

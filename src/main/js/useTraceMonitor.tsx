@@ -51,11 +51,12 @@ type TraceMonitorConfig = HalRepresentation & {
 export const useTraceMonitor = (
   page: number,
   categoryFilter: string,
-  onlyFailedFilter: boolean
+  onlyFailedFilter: boolean,
+  labelFilter: string
 ): ApiResult<TraceMonitor> => {
   const indexLink = useRequiredIndexLink("traceMonitor");
-  return useQuery<TraceMonitor, Error>(["traceMonitor", page, categoryFilter, onlyFailedFilter], () => {
-    let link = indexLink + `?page=${page}`;
+  return useQuery<TraceMonitor, Error>(["traceMonitor", page, categoryFilter, onlyFailedFilter, labelFilter], () => {
+    let link = indexLink + `?page=${page}&labelFilter=${labelFilter}`;
     if (categoryFilter && categoryFilter !== "ALL") {
       link += `&category=${categoryFilter}`;
     }
