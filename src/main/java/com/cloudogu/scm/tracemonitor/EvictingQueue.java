@@ -42,7 +42,7 @@ public final class EvictingQueue<E> extends ForwardingQueue<E> {
 
   public EvictingQueue() {
     this.delegate = new ArrayDeque<>();
-    this.maxSize = 100;
+    this.maxSize = Integer.MAX_VALUE;
   }
 
   private EvictingQueue(int maxSize) {

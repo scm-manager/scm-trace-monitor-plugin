@@ -48,4 +48,22 @@ class EvictingQueueTest {
     assertThat(queue).containsOnly("b", "c");
   }
 
+  @Test
+  void shouldLimitEntriesByQueueSize() {
+    EvictingQueue<String> queue = EvictingQueue.create(100);
+    for (int i = 0; i < 120; i++) {
+      assertThat(queue.add("a" + i)).isTrue();
+    }
+    assertThat(queue).hasSize(100);
+  }
+
+  @Test
+  void shouldAllowMoreThan100Entries() {
+    EvictingQueue<String> queue = new EvictingQueue<>();
+    for (int i = 0; i < 120; i++) {
+      assertThat(queue.add("a" + i)).isTrue();
+    }
+    assertThat(queue).hasSize(120);
+  }
+
 }
