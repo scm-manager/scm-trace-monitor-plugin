@@ -32,7 +32,7 @@ const TraceMonitorNavigation: FC = () => {
 
   const matchesTraceMonitor = (route: any) => {
     const regex = new RegExp("/admin/trace-monitor/.+");
-    return route.location.pathname.match(regex);
+    return !!route.location.pathname.match(regex);
   };
 
   return (
