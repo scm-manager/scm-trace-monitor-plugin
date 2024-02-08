@@ -42,14 +42,6 @@ const TraceMonitor: FC<{ links: Links }> = () => {
   const { data, error, isLoading } = useTraceMonitor(page, categoryFilter, onlyFailedFilter, searchFilter);
   const { data: categories, error: categoriesError, isLoading: categoriesLoading } = useTraceMonitorCategories();
 
-  useEffect(() => {
-    let pathname = location.pathname;
-    if (!pathname.endsWith("/")) {
-      pathname = pathname.substring(0, pathname.lastIndexOf("/") + 1);
-    }
-    history.push(pathname);
-  }, [categoryFilter, onlyFailedFilter]);
-
   if (error || categoriesError) {
     return <ErrorNotification error={error} />;
   }
