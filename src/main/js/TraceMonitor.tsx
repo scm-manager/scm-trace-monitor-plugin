@@ -14,26 +14,72 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Redirect, useHistory, useLocation, useRouteMatch } from "react-router-dom";
+import { Redirect, useRouteMatch } from "react-router-dom";
 import { Links } from "@scm-manager/ui-types";
-import { ErrorNotification, Loading, Title, Subtitle, urls, LinkPaginator } from "@scm-manager/ui-components";
+import { ErrorNotification, LinkPaginator, Loading, Subtitle, Title, urls } from "@scm-manager/ui-components";
 import TraceMonitorTable from "./TraceMonitorTable";
 import { useTraceMonitor, useTraceMonitorCategories } from "./useTraceMonitor";
 import TraceMonitorTableActions from "./TraceMonitorTableActions";
 
+const usePrevious = <T,>(value: T) => {
+  const ref = useRef(value);
+
+  useEffect(() => {
+    ref.current = value;
+  }, [value]);
+
+  return ref.current;
+};
+
 const TraceMonitor: FC<{ links: Links }> = () => {
   const [t] = useTranslation("plugins");
+
   const match = useRouteMatch();
-  const location = useLocation();
-  const history = useHistory();
   const page = urls.getPageFromMatch(match);
+
   const [categoryFilter, setCategoryFilter] = useState("ALL");
+  const previousCategoryFilter = usePrevious(categoryFilter);
+
   const [onlyFailedFilter, setOnlyFailedFilter] = useState(false);
-  const [searchFilter, setSearchFilter] = useState("");
-  const { data, error, isLoading } = useTraceMonitor(page, categoryFilter, onlyFailedFilter, searchFilter);
+  const previousOnlyFailedFilter = usePrevious(onlyFailedFilter);
+
+  const [queryLabelFilter, setQueryLabelFilter] = useState("");
+  const previousLabelFilter = usePrevious(queryLabelFilter);
+
+  const [redirectToFirstPage, setRedirectToFirstPage] = useState(false);
+
+  const { data, error, isLoading } = useTraceMonitor(page, categoryFilter, onlyFailedFilter, queryLabelFilter);
   const { data: categories, error: categoriesError, isLoading: categoriesLoading } = useTraceMonitorCategories();
+
+  useEffect(() => {
+    if (queryLabelFilter !== previousLabelFilter) {
+      setRedirectToFirstPage(true);
+    }
+  }, [queryLabelFilter, previousLabelFilter]);
+
+  useEffect(() => {
+    if (categoryFilter !== previousCategoryFilter) {
+      setRedirectToFirstPage(true);
+    }
+  }, [categoryFilter, previousCategoryFilter]);
+
+  useEffect(() => {
+    if (onlyFailedFilter !== previousOnlyFailedFilter) {
+      setRedirectToFirstPage(true);
+    }
+  }, [onlyFailedFilter, previousOnlyFailedFilter]);
+
+  useEffect(() => {
+    if (redirectToFirstPage) {
+      setRedirectToFirstPage(false);
+    }
+  }, [redirectToFirstPage]);
+
+  if (redirectToFirstPage || (data && data.pageTotal < page && page > 1)) {
+    return <Redirect to={"/admin/trace-monitor/1"} />;
+  }
 
   if (error || categoriesError) {
     return <ErrorNotification error={error} />;
@@ -41,10 +87,6 @@ const TraceMonitor: FC<{ links: Links }> = () => {
 
   if (isLoading || categoriesLoading || !data || !categories) {
     return <Loading />;
-  }
-
-  if (data && data.pageTotal < page && page > 1) {
-    return <Redirect to={`/admin/trace-monitor/${data.pageTotal}`} />;
   }
 
   return (
@@ -58,8 +100,8 @@ const TraceMonitor: FC<{ links: Links }> = () => {
         statusFilter={onlyFailedFilter}
         changeStatusFilter={setOnlyFailedFilter}
         categories={categories.categories}
-        searchFilter={searchFilter}
-        setSearchFilter={setSearchFilter}
+        labelFilter={queryLabelFilter}
+        setLabelFilter={setQueryLabelFilter}
       />
       <TraceMonitorTable spans={data.spans} />
       <hr />

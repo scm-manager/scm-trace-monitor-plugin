@@ -25,10 +25,9 @@ type Props = {
   changeCategoryFilter: (category: string) => void;
   statusFilter: boolean;
   changeStatusFilter: (status: boolean) => void;
-  searchFilter: string;
-  setSearchFilter: (searchFilter: string) => void;
+  labelFilter: string;
+  setLabelFilter: (searchFilter: string) => void;
 };
-
 
 const Level = styled.div`
   display: flex;
@@ -69,8 +68,8 @@ const TraceMonitorTableActions: FC<Props> = ({
   changeCategoryFilter,
   statusFilter,
   changeStatusFilter,
-  searchFilter,
-  setSearchFilter
+  labelFilter,
+  setLabelFilter
 }) => {
   const [t] = useTranslation("plugins");
 
@@ -86,10 +85,10 @@ const TraceMonitorTableActions: FC<Props> = ({
       <div className="column">
         <Level className="is-word-break-none">
           <span className="mr-2">
-            {t("scm-trace-monitor-plugin.tableActions.searchFilter")}
-            <Help message={t("scm-trace-monitor-plugin.tableActions.searchFilterHelp")} />
+            {t("scm-trace-monitor-plugin.tableActions.labelFilter")}
+            <Help message={t("scm-trace-monitor-plugin.tableActions.labelFilterHelp")} />
           </span>
-          <FilterInput value={searchFilter} filter={setSearchFilter} placeholder="" autoFocus />
+          <FilterInput value={labelFilter} filter={setLabelFilter} placeholder="" autoFocus />
         </Level>
       </div>
       <FlexNoneColumn className="column is-centered is-flex">

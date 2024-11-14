@@ -1,0 +1,2 @@
+- type: changed
+  description: Redirect to first page when filtering for labels, category or whether a request has failed or not
