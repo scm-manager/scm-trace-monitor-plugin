@@ -1,2 +1,0 @@
-- type: fixed
-  description: Handle store exceptions to prevent other processes from failing
