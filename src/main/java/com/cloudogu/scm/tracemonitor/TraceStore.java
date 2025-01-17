@@ -28,6 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.Striped;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.store.DataStore;
 import sonia.scm.store.DataStoreFactory;
@@ -47,6 +48,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.function.Supplier;
 
+@Slf4j
 @Singleton
 public class TraceStore {
 
@@ -63,6 +65,7 @@ public class TraceStore {
 
   public Collection<SpanContext> getAll() {
     SecurityUtils.getSubject().checkPermission("traceMonitor:read");
+    log.debug("reading all spans");
     List<SpanContext> spans = new ArrayList<>();
     createStore()
       .getAll()
@@ -73,20 +76,30 @@ public class TraceStore {
 
   public Collection<SpanContext> get(String kind) {
     SecurityUtils.getSubject().checkPermission("traceMonitor:read");
-    return doSynchronized(kind, false, () -> Collections.unmodifiableCollection(createStore().get(kind).getSpans()));
+    log.debug("reading all spans for kind '{}'", kind);
+    return doSynchronized(
+      kind,
+      false,
+      () -> Collections.unmodifiableCollection(createStore().getOptional(kind).orElseGet(() -> new StoreEntry(1)).getSpans())
+    );
   }
 
   synchronized void add(SpanContext spanContext) {
+    log.debug("add span to store for kind '{}'", spanContext.getKind());
     doSynchronized(spanContext.getKind(), true, () -> {
-      DataStore<StoreEntry> store = createStore();
-      StoreEntry storeEntry = store.get(spanContext.getKind());
-      int configuredStoreSize = globalConfigStore.get().getStoreSize();
-      if (storeEntry == null) {
-        storeEntry = new StoreEntry(configuredStoreSize);
+      try {
+        DataStore<StoreEntry> store = createStore();
+        StoreEntry storeEntry = store.get(spanContext.getKind());
+        int configuredStoreSize = globalConfigStore.get().getStoreSize();
+        if (storeEntry == null) {
+          storeEntry = new StoreEntry(configuredStoreSize);
+        }
+        storeEntry = resizeStoreEntryMaxSize(storeEntry, configuredStoreSize);
+        storeEntry.getSpans().add(spanContext);
+        store.put(spanContext.getKind(), storeEntry);
+      } catch (Exception e) {
+        log.error("failed to write span to store for kind '{}'", spanContext.getKind(), e);
       }
-      storeEntry = resizeStoreEntryMaxSize(storeEntry, configuredStoreSize);
-      storeEntry.getSpans().add(spanContext);
-      store.put(spanContext.getKind(), storeEntry);
       return null;
     });
   }
