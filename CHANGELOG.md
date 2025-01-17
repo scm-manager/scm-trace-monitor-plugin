@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.2.2 - 2025-01-17
+### Fixed
+- Handle store exceptions to prevent other processes from failing
+
 ## 3.1.0 - 2024-12-05
 ### Changed
 - Redirect to first page when filtering for labels, category or whether a request has failed or not

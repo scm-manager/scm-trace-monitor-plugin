@@ -86,6 +86,15 @@ class TraceStoreTest {
   }
 
   @Test
+  void shouldNotFailWhenAddingSpanWithStorageError() {
+    when(globalConfigStore.get()).thenThrow(new RuntimeException("somethings wrong with the storage"));
+
+    addSpanContextToStore("Jenkins", false);
+
+    assertThat(store.get("Jenkins")).isEmpty();
+  }
+
+  @Test
   void shouldGetEmptyList() {
     Collection<SpanContext> spanContexts = store.getAll();
     assertThat(spanContexts).isEmpty();
