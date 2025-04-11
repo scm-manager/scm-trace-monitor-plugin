@@ -22,6 +22,7 @@ import { ErrorNotification, LinkPaginator, Loading, Subtitle, Title, urls } from
 import TraceMonitorTable from "./TraceMonitorTable";
 import { useTraceMonitor, useTraceMonitorCategories } from "./useTraceMonitor";
 import TraceMonitorTableActions from "./TraceMonitorTableActions";
+import { useDocumentTitle } from "@scm-manager/ui-core";
 
 const usePrevious = <T,>(value: T) => {
   const ref = useRef(value);
@@ -52,6 +53,15 @@ const TraceMonitor: FC<{ links: Links }> = () => {
 
   const { data, error, isLoading } = useTraceMonitor(page, categoryFilter, onlyFailedFilter, queryLabelFilter);
   const { data: categories, error: categoriesError, isLoading: categoriesLoading } = useTraceMonitorCategories();
+
+  const getDocumentTitle = () => {
+    if (data) {
+      return t("scm-trace-monitor-plugin.documentTitle", { current: page, total: data?.pageTotal });
+    } else {
+      return t("scm-trace-monitor-plugin.subtitle");
+    }
+  }
+  useDocumentTitle(getDocumentTitle());
 
   useEffect(() => {
     if (queryLabelFilter !== previousLabelFilter) {

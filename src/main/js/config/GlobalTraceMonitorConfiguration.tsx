@@ -16,6 +16,7 @@
 
 import React, { FC } from "react";
 import { Title, Configuration } from "@scm-manager/ui-components";
+import { useDocumentTitle } from "@scm-manager/ui-core";
 import GlobalTraceMonitorConfigurationForm from "./GlobalTraceMonitorConfigurationForm";
 import { useTranslation } from "react-i18next";
 
@@ -25,6 +26,7 @@ type Props = {
 
 const GlobalTraceMonitorConfiguration: FC<Props> = ({ link }) => {
   const [t] = useTranslation("plugins");
+  useDocumentTitle(t("scm-trace-monitor-plugin.global.nav-link"));
 
   return (
     <>

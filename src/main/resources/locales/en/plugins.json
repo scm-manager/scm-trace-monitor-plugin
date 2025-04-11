@@ -1,6 +1,7 @@
 {
   "scm-trace-monitor-plugin": {
     "title": "Administration",
+    "documentTitle": "Trace Monitor page {{current}} of {{total}}",
     "subtitle": "Trace Monitor",
     "navLink": "Trace Monitor",
     "global": {
