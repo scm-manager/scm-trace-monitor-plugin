@@ -2829,14 +2829,14 @@
     "@types/serve-static" "*"
 
 "@types/fetch-mock@^7.3.1":
-  version "7.3.6"
-  resolved "https://registry.yarnpkg.com/@types/fetch-mock/-/fetch-mock-7.3.6.tgz#ec4a72d320cb779f01348af975f786908a641245"
-  integrity sha512-vE4GcV+NzDKKiCtIHO+/+1osbr9sUe5fl1nGlEdwxOXNvJnnXCpC0y6lAqj3S/NlJMEKnGWeCFZWy79vQA4eNA==
+  version "7.3.8"
+  resolved "https://registry.yarnpkg.com/@types/fetch-mock/-/fetch-mock-7.3.8.tgz#2fd769cb7881ac029d06ab2c23a254a9f208a034"
+  integrity sha512-ztsIGiyUvD0GaqPc9/hb8k20gnr6lupqA6SFtqt+8v2mtHhNO/Ebb6/b7N6af/7x0A7s1C8nxrEGzajMBqz8qA==
 
 "@types/graceful-fs@^4.1.2":
-  version "4.1.7"
-  resolved "https://registry.yarnpkg.com/@types/graceful-fs/-/graceful-fs-4.1.7.tgz#30443a2e64fd51113bc3e2ba0914d47109695e2a"
-  integrity sha512-MhzcwU8aUygZroVwL2jeYk6JisJrPl/oov/gsgGCue9mkgl9wjGbzReYQClxiUgFDnib9FuHqTndccKeZKxTRw==
+  version "4.1.9"
+  resolved "https://registry.yarnpkg.com/@types/graceful-fs/-/graceful-fs-4.1.9.tgz#2a06bc0f68a20ab37b3e36aa238be6abdf49e8b4"
+  integrity sha512-olP3sd1qOEe5dXTSaFvQG+02VdRXcdytWLAZsAq1PecU8uqQAhkrnbli7DagjtXKW/Bl7YJbUsa8MPcuc8LHEQ==
   dependencies:
     "@types/node" "*"
 
