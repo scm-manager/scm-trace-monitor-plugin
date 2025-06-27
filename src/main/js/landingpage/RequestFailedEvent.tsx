@@ -29,7 +29,7 @@ const RequestFailedEvent = ({ event }) => {
       avatar={icon}
       contentLeft={<strong>{t("scm-trace-monitor-plugin.landingpage.requestFailed.header")}</strong>}
       contentRight={<small><DateFromNow date={event.date} /></small>}
-      footer={t("scm-trace-monitor-plugin.landingpage.requestFailed.category", {
+      footer={t("scm-trace-monitor-plugin.landingpage.requestFailed.kind", {
         ...event.context
       })}
     />

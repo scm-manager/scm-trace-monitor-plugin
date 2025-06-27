@@ -11,7 +11,9 @@
     "config": {
       "form": {
         "storeSize": "Anzahl der gespeicherten Anfragen je Kategorie",
-        "storeSizeHelpText": "Definiert die Anzahl der gespeicherten Anfragen je Kategorie. \nVorsicht: Eine hohe Anzahl kann zu starker Speicherauslastung führen."
+        "storeSizeHelpText": "Definiert die Anzahl der gespeicherten Anfragen je Kategorie. \nVorsicht: Eine hohe Anzahl kann zu starker Speicherauslastung führen.",
+        "cleanupExpression": "Cron Ausdruck für die Bereinigung",
+        "cleanupExpressionHelpText": "Setzt den Cron Ausdruck für den Bereinigungsjob, der alte Anfragen aus dem Speicher entfernt. \nDer Standardwert ist \"0 0 2 * * ?\", was bedeutet, dass er jeden Tag um 2 Uhr morgens läuft."
       }
     },
     "table": {
@@ -28,7 +30,7 @@
     },
     "tableActions": {
       "statusFilter": "Nur fehlgeschlagene anzeigen",
-      "categoryFilter": "Kategorie Filter",
+      "kindFilter": "Kategorie Filter",
       "labelFilter": "Label Filter",
       "labelFilterHelp": "Der Suchfilter bezieht sich auf die Labels, die unter \"Details anzeigen\" an den gespeicherten Requests angegeben sind, z. B. URL, Methodenname, Fehlerbeschreibung oder eine Nachricht. Welche Labels an einem Request gesetzt sind, hängt von der Kategorie und der Implementierung des Requests ab.",
       "all": "Alle"
@@ -39,7 +41,7 @@
     "landingpage": {
       "requestFailed": {
         "header": "Anfrage fehlgeschlagen",
-        "category": "Kategorie: {{kind}}"
+        "kind": "Kategorie: {{kind}}"
       }
     }
   },

@@ -20,7 +20,7 @@ import { Redirect, useRouteMatch } from "react-router-dom";
 import { Links } from "@scm-manager/ui-types";
 import { ErrorNotification, LinkPaginator, Loading, Subtitle, Title, urls } from "@scm-manager/ui-components";
 import TraceMonitorTable from "./TraceMonitorTable";
-import { useTraceMonitor, useTraceMonitorCategories } from "./useTraceMonitor";
+import { useTraceMonitor, useTraceMonitorKinds } from "./useTraceMonitor";
 import TraceMonitorTableActions from "./TraceMonitorTableActions";
 import { useDocumentTitle } from "@scm-manager/ui-core";
 
@@ -40,8 +40,8 @@ const TraceMonitor: FC<{ links: Links }> = () => {
   const match = useRouteMatch();
   const page = urls.getPageFromMatch(match);
 
-  const [categoryFilter, setCategoryFilter] = useState("ALL");
-  const previousCategoryFilter = usePrevious(categoryFilter);
+  const [kindFilter, setKindFilter] = useState("ALL");
+  const previousKindFilter = usePrevious(kindFilter);
 
   const [onlyFailedFilter, setOnlyFailedFilter] = useState(false);
   const previousOnlyFailedFilter = usePrevious(onlyFailedFilter);
@@ -51,8 +51,8 @@ const TraceMonitor: FC<{ links: Links }> = () => {
 
   const [redirectToFirstPage, setRedirectToFirstPage] = useState(false);
 
-  const { data, error, isLoading } = useTraceMonitor(page, categoryFilter, onlyFailedFilter, queryLabelFilter);
-  const { data: categories, error: categoriesError, isLoading: categoriesLoading } = useTraceMonitorCategories();
+  const { data, error, isLoading } = useTraceMonitor(page, kindFilter, onlyFailedFilter, queryLabelFilter);
+  const { data: kinds, error: kindsError, isLoading: kindsLoading } = useTraceMonitorKinds();
 
   const getDocumentTitle = () => {
     if (data) {
@@ -70,10 +70,10 @@ const TraceMonitor: FC<{ links: Links }> = () => {
   }, [queryLabelFilter, previousLabelFilter]);
 
   useEffect(() => {
-    if (categoryFilter !== previousCategoryFilter) {
+    if (kindFilter !== previousKindFilter) {
       setRedirectToFirstPage(true);
     }
-  }, [categoryFilter, previousCategoryFilter]);
+  }, [kindFilter, previousKindFilter]);
 
   useEffect(() => {
     if (onlyFailedFilter !== previousOnlyFailedFilter) {
@@ -91,11 +91,11 @@ const TraceMonitor: FC<{ links: Links }> = () => {
     return <Redirect to={"/admin/trace-monitor/1"} />;
   }
 
-  if (error || categoriesError) {
+  if (error || kindsError) {
     return <ErrorNotification error={error} />;
   }
 
-  if (isLoading || categoriesLoading || !data || !categories) {
+  if (isLoading || kindsLoading || !data || !kinds) {
     return <Loading />;
   }
 
@@ -105,11 +105,11 @@ const TraceMonitor: FC<{ links: Links }> = () => {
       <Subtitle subtitle={t("scm-trace-monitor-plugin.subtitle")} />
       <TraceMonitorTableActions
         key="actions"
-        categoryFilter={categoryFilter}
-        changeCategoryFilter={setCategoryFilter}
+        kindFilter={kindFilter}
+        changeKindFilter={setKindFilter}
         statusFilter={onlyFailedFilter}
         changeStatusFilter={setOnlyFailedFilter}
-        categories={categories.categories}
+        kinds={kinds.kinds}
         labelFilter={queryLabelFilter}
         setLabelFilter={setQueryLabelFilter}
       />

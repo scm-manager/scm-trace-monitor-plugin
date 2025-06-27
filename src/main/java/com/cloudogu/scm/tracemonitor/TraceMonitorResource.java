@@ -96,7 +96,7 @@ public class TraceMonitorResource {
     )
   )
   public TraceMonitorResultDto get(
-    @DefaultValue("") @QueryParam("category") String category,
+    @DefaultValue("") @QueryParam("kind") String kind,
     @QueryParam("onlyFailed") boolean onlyFailed,
     @DefaultValue("1") @QueryParam("page") int page,
     @DefaultValue("100") @QueryParam("limit") int limit,
@@ -104,8 +104,8 @@ public class TraceMonitorResource {
   ) {
     Stream<SpanContextDto> dtos;
     Stream<SpanContext> spanContexts;
-    if (!Strings.isNullOrEmpty(category)) {
-      spanContexts = sortByTimestamp(store.get(category));
+    if (!Strings.isNullOrEmpty(kind)) {
+      spanContexts = sortByTimestamp(store.get(kind));
     } else {
       spanContexts = sortByTimestamp(store.getAll());
     }
@@ -177,12 +177,12 @@ public class TraceMonitorResource {
 
   @GET
   @Produces(TRACE_MONITOR_MEDIA_TYPE)
-  @Path("available-categories")
+  @Path("available-kinds")
   @Operation(
-    summary = "Trace monitor categories",
-    description = "Returns a list of the trace monitor categories.",
+    summary = "Trace monitor kinds",
+    description = "Returns a list of the trace monitor kinds.",
     tags = "Trace Monitor",
-    operationId = "trace_monitor_get_categories"
+    operationId = "trace_monitor_get_kinds"
   )
   @ApiResponse(
     responseCode = "200",
@@ -202,24 +202,20 @@ public class TraceMonitorResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public AvailableCategoriesDto getAvailableCategories() {
-    final String selfLink = new LinkBuilder(scmPathInfo.get().get(), TraceMonitorResource.class).method("getAvailableCategories").parameters().href();
-    List<String> categories = store.getAll()
-      .stream()
-      .map(SpanContext::getKind)
-      .distinct()
-      .collect(Collectors.toList());
-    return new AvailableCategoriesDto(new Links.Builder().self(selfLink).build(), categories);
+  public AvailableKindsDto getAvailableKinds() {
+    final String selfLink = new LinkBuilder(scmPathInfo.get().get(), TraceMonitorResource.class).method("getAvailableKinds").parameters().href();
+    Collection<String> kinds = store.getKinds();
+    return new AvailableKindsDto(new Links.Builder().self(selfLink).build(), kinds);
   }
 
   @Getter
   @SuppressWarnings("java:S2160") // wo do not need equals and hashcode for dto
-  static class AvailableCategoriesDto extends HalRepresentation {
-    private final List<String> categories;
+  static class AvailableKindsDto extends HalRepresentation {
+    private final Collection<String> kinds;
 
-    public AvailableCategoriesDto(Links links, List<String> categories) {
+    public AvailableKindsDto(Links links, Collection<String> kinds) {
       super(links);
-      this.categories = categories;
+      this.kinds = kinds;
     }
   }
 }

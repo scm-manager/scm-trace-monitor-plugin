@@ -1,0 +1,99 @@
+<?xml version="1.0" ?>
+<!--
+    Copyright (c) 2020 - present Cloudogu GmbH
+
+    This program is free software: you can redistribute it and/or modify it under
+    the terms of the GNU Affero General Public License as published by the Free
+    Software Foundation, version 3.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+    details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program. If not, see https://www.gnu.org/licenses/.
+-->
+
+<storeEntry>
+  <request>
+    <kind>Plugin Center</kind>
+    <labels>
+      <entry>
+        <key>method</key>
+        <value>GET</value>
+      </entry>
+      <entry>
+        <key>url</key>
+        <value>https://plugin-center-api.scm-manager.org/api/v1/plugins/3.0.0?os=Linux&amp;arch=64&amp;jre=17.0.12</value>
+      </entry>
+      <entry>
+        <key>status</key>
+        <value>200</value>
+      </entry>
+    </labels>
+    <opened>2024-10-10T14:25:42.317717686Z</opened>
+    <closed>2024-10-10T14:25:42.612568812Z</closed>
+    <failed>false</failed>
+  </request>
+  <request>
+    <kind>Plugin Center</kind>
+    <labels>
+      <entry>
+        <key>method</key>
+        <value>GET</value>
+      </entry>
+      <entry>
+        <key>url</key>
+        <value>https://plugin-center-api.scm-manager.org/api/v1/download/scm-code-editor-plugin/3.0.0</value>
+      </entry>
+      <entry>
+        <key>status</key>
+        <value>200</value>
+      </entry>
+    </labels>
+    <opened>2024-10-10T14:30:15.134739144Z</opened>
+    <closed>2024-10-10T14:30:15.436857116Z</closed>
+    <failed>false</failed>
+  </request>
+  <request>
+    <kind>Plugin Center</kind>
+    <labels>
+      <entry>
+        <key>method</key>
+        <value>GET</value>
+      </entry>
+      <entry>
+        <key>url</key>
+        <value>https://plugin-center-api.scm-manager.org/api/v1/download/scm-script-plugin/3.0.0</value>
+      </entry>
+      <entry>
+        <key>status</key>
+        <value>200</value>
+      </entry>
+    </labels>
+    <opened>2024-10-10T14:30:16.090404159Z</opened>
+    <closed>2024-10-10T14:30:16.220654276Z</closed>
+    <failed>false</failed>
+  </request>
+  <request>
+    <kind>Plugin Center</kind>
+    <labels>
+      <entry>
+        <key>url</key>
+        <value>https://plugin-center-api.scm-manager.org/api/v1/plugins/3.0.0?os=Linux&amp;arch=64&amp;jre=17.0.12</value>
+      </entry>
+      <entry>
+        <key>method</key>
+        <value>GET</value>
+      </entry>
+      <entry>
+        <key>status</key>
+        <value>200</value>
+      </entry>
+    </labels>
+    <opened>2024-10-10T14:30:22.948626681Z</opened>
+    <closed>2024-10-10T14:30:23.175285828Z</closed>
+    <failed>false</failed>
+  </request>
+</storeEntry>

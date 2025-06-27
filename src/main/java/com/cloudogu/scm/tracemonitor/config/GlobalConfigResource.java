@@ -16,6 +16,7 @@
 
 package com.cloudogu.scm.tracemonitor.config;
 
+import com.cloudogu.scm.tracemonitor.Cleanup;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -34,7 +35,6 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 import static com.cloudogu.scm.tracemonitor.config.GlobalConfigResource.TRACE_MONITOR_CONFIG_PATH_V2;
 
@@ -49,11 +49,13 @@ public class GlobalConfigResource {
 
   private final ConfigurationMapper mapper;
   private final GlobalConfigStore store;
+  private final Cleanup cleanup;
 
   @Inject
-  public GlobalConfigResource(ConfigurationMapper mapper, GlobalConfigStore store) {
+  public GlobalConfigResource(ConfigurationMapper mapper, GlobalConfigStore store, Cleanup cleanup) {
     this.mapper = mapper;
     this.store = store;
+    this.cleanup = cleanup;
   }
 
   @GET
@@ -83,9 +85,9 @@ public class GlobalConfigResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public Response get() {
+  public GlobalConfigDto get() {
     ConfigurationPermissions.read("traceMonitor").check();
-    return Response.ok(mapper.map(store.get())).build();
+    return mapper.map(store.get());
   }
 
   @PUT
@@ -109,8 +111,8 @@ public class GlobalConfigResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public Response update(@Valid GlobalConfigDto updatedConfig) {
+  public void update(@Valid GlobalConfigDto updatedConfig) {
     store.update(mapper.map(updatedConfig));
-    return Response.noContent().build();
+    cleanup.reSchedule();
   }
 }

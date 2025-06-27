@@ -33,8 +33,8 @@ type TraceMonitor = PagedCollection & {
   pageSize: number;
 };
 
-type TraceMonitorCategories = HalRepresentation & {
-  categories: string[];
+type TraceMonitorKinds = HalRepresentation & {
+  kinds: string[];
 };
 
 type TraceMonitorConfig = HalRepresentation & {
@@ -43,15 +43,15 @@ type TraceMonitorConfig = HalRepresentation & {
 
 export const useTraceMonitor = (
   page: number,
-  categoryFilter: string,
+  kindFilter: string,
   onlyFailedFilter: boolean,
   labelFilter: string
 ): ApiResult<TraceMonitor> => {
   const indexLink = useRequiredIndexLink("traceMonitor");
-  return useQuery<TraceMonitor, Error>(["traceMonitor", page, categoryFilter, onlyFailedFilter, labelFilter], () => {
+  return useQuery<TraceMonitor, Error>(["traceMonitor", page, kindFilter, onlyFailedFilter, labelFilter], () => {
     let link = indexLink + `?page=${page}&labelFilter=${labelFilter}`;
-    if (categoryFilter && categoryFilter !== "ALL") {
-      link += `&category=${categoryFilter}`;
+    if (kindFilter && kindFilter !== "ALL") {
+      link += `&kind=${kindFilter}`;
     }
     if (onlyFailedFilter) {
       link += "&onlyFailed=true";
@@ -60,9 +60,9 @@ export const useTraceMonitor = (
   });
 };
 
-export const useTraceMonitorCategories = (): ApiResult<TraceMonitorCategories> => {
-  const indexLink = useRequiredIndexLink("traceMonitorCategories");
-  return useQuery<TraceMonitorCategories, Error>(["traceMonitorCategories"], () => {
+export const useTraceMonitorKinds = (): ApiResult<TraceMonitorKinds> => {
+  const indexLink = useRequiredIndexLink("traceMonitorKinds");
+  return useQuery<TraceMonitorKinds, Error>(["traceMonitorKinds"], () => {
     return apiClient.get(indexLink).then(response => response.json());
   });
 };

@@ -19,6 +19,7 @@ package com.cloudogu.scm.tracemonitor;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Provider;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.shiro.util.ThreadContext;
 import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
@@ -33,7 +34,6 @@ import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.trace.SpanContext;
 import sonia.scm.web.RestDispatcher;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -41,7 +41,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.lenient;
@@ -123,10 +122,10 @@ class TraceMonitorResourceTest {
   }
 
   @Test
-  void shouldOnlyGetSpansForCategory() throws UnsupportedEncodingException, URISyntaxException {
+  void shouldOnlyGetSpansForKind() throws UnsupportedEncodingException, URISyntaxException {
     mockSpans(Optional.of("Redmine"));
 
-    MockHttpRequest request = MockHttpRequest.get("/" + TraceMonitorResource.TRACE_MONITOR_PATH + "?category=Redmine");
+    MockHttpRequest request = MockHttpRequest.get("/" + TraceMonitorResource.TRACE_MONITOR_PATH + "?kind=Redmine");
     MockHttpResponse response = new MockHttpResponse();
 
     dispatcher.invoke(request, response);
@@ -140,7 +139,7 @@ class TraceMonitorResourceTest {
   void shouldGetEmptyCollection() throws UnsupportedEncodingException, URISyntaxException {
     mockSpans(Optional.of("Redmine"));
 
-    MockHttpRequest request = MockHttpRequest.get("/" + TraceMonitorResource.TRACE_MONITOR_PATH + "?category=Redmine&onlyFailed=true");
+    MockHttpRequest request = MockHttpRequest.get("/" + TraceMonitorResource.TRACE_MONITOR_PATH + "?kind=Redmine&onlyFailed=true");
     MockHttpResponse response = new MockHttpResponse();
 
     dispatcher.invoke(request, response);
@@ -154,15 +153,15 @@ class TraceMonitorResourceTest {
   }
 
   @Test
-  void shouldGetAvailableCategories() throws UnsupportedEncodingException, URISyntaxException {
+  void shouldGetAvailableKinds() throws UnsupportedEncodingException, URISyntaxException {
     mockSpans(Optional.empty());
-    MockHttpRequest request = MockHttpRequest.get("/" + TraceMonitorResource.TRACE_MONITOR_PATH + "available-categories");
+    MockHttpRequest request = MockHttpRequest.get("/" + TraceMonitorResource.TRACE_MONITOR_PATH + "available-kinds");
     MockHttpResponse response = new MockHttpResponse();
 
     dispatcher.invoke(request, response);
 
     assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
-    assertThat(response.getContentAsString()).contains("{\"categories\":[\"Jenkins\",\"Redmine\"],\"_links\":{\"self\":{\"href\":\"hitchhiker.org/scm/v2/trace-monitor/available-categories\"}}}");
+    assertThat(response.getContentAsString()).contains("{\"kinds\":[\"Jenkins\",\"Redmine\"],\"_links\":{\"self\":{\"href\":\"hitchhiker.org/scm/v2/trace-monitor/available-kinds\"}}}");
   }
 
   @Test
@@ -235,12 +234,13 @@ class TraceMonitorResourceTest {
   }
 
 
-  private void mockSpans(Optional<String> category) {
+  private void mockSpans(Optional<String> kind) {
     SpanContext span1 = new SpanContext("Jenkins", ImmutableMap.of("url", "hitchhiker.org/jenkins"), Instant.now(), Instant.now().plusMillis(200L), true);
     SpanContext span2 = new SpanContext("Redmine", ImmutableMap.of("url", "hitchhiker.org/redmine"), Instant.now(), Instant.now().plusMillis(400L), false);
     lenient().when(store.getAll()).thenReturn(ImmutableList.of(span1, span2));
+    lenient().when(store.getKinds()).thenReturn(List.of("Jenkins", "Redmine"));
     lenient().when(mapper.map(span1)).thenReturn(new SpanContextDto("Jenkins", ImmutableMap.of("url", "hitchhiker.org/jenkins"), Instant.now(), Instant.now().plusMillis(200L), 200, true));
     lenient().when(mapper.map(span2)).thenReturn(new SpanContextDto("Redmine", ImmutableMap.of("url", "hitchhiker.org/redmine"), Instant.now(), Instant.now().plusMillis(400L), 400, false));
-    category.ifPresent(value -> lenient().when(store.get(value)).thenReturn(ImmutableList.of(span1, span2).stream().filter(s -> s.getKind().equalsIgnoreCase(value)).collect(Collectors.toList())));
+    kind.ifPresent(value -> lenient().when(store.get(value)).thenReturn(List.of(span1, span2).stream().filter(s -> s.getKind().equalsIgnoreCase(value)).toList()));
   }
 }

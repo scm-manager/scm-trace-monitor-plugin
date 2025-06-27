@@ -1,0 +1,59 @@
+<?xml version="1.0" ?>
+<!--
+    Copyright (c) 2020 - present Cloudogu GmbH
+
+    This program is free software: you can redistribute it and/or modify it under
+    the terms of the GNU Affero General Public License as published by the Free
+    Software Foundation, version 3.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+    details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program. If not, see https://www.gnu.org/licenses/.
+-->
+
+<storeEntry>
+  <request>
+    <kind>Release Feed</kind>
+    <labels>
+      <entry>
+        <key>method</key>
+        <value>GET</value>
+      </entry>
+      <entry>
+        <key>url</key>
+        <value>https://scm-manager.org/download/rss.xml</value>
+      </entry>
+      <entry>
+        <key>status</key>
+        <value>200</value>
+      </entry>
+    </labels>
+    <opened>2024-10-10T14:26:14.362536316Z</opened>
+    <closed>2024-10-10T14:26:14.495113219Z</closed>
+    <failed>false</failed>
+  </request>
+  <request>
+    <kind>Release Feed</kind>
+    <labels>
+      <entry>
+        <key>url</key>
+        <value>https://scm-manager.org/download/rss.xml</value>
+      </entry>
+      <entry>
+        <key>method</key>
+        <value>GET</value>
+      </entry>
+      <entry>
+        <key>status</key>
+        <value>200</value>
+      </entry>
+    </labels>
+    <opened>2024-10-10T14:32:15.532769215Z</opened>
+    <closed>2024-10-10T14:32:15.673339719Z</closed>
+    <failed>false</failed>
+  </request>
+</storeEntry>

@@ -20,9 +20,9 @@ import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 
 type Props = {
-  categories: string[];
-  categoryFilter: string;
-  changeCategoryFilter: (category: string) => void;
+  kinds: string[];
+  kindFilter: string;
+  changeKindFilter: (kind: string) => void;
   statusFilter: boolean;
   changeStatusFilter: (status: boolean) => void;
   labelFilter: string;
@@ -63,9 +63,9 @@ const TableActions = styled.div`
 `;
 
 const TraceMonitorTableActions: FC<Props> = ({
-  categories,
-  categoryFilter,
-  changeCategoryFilter,
+  kinds,
+  kindFilter,
+  changeKindFilter,
   statusFilter,
   changeStatusFilter,
   labelFilter,
@@ -73,11 +73,11 @@ const TraceMonitorTableActions: FC<Props> = ({
 }) => {
   const [t] = useTranslation("plugins");
 
-  const createCategoryFilterOptions = () => {
-    const filterCategories: SelectItem[] = [];
-    filterCategories.push({ label: t("scm-trace-monitor-plugin.tableActions.all"), value: "ALL" });
-    categories.forEach(category => filterCategories.push({ label: category, value: category }));
-    return filterCategories;
+  const createKindFilterOptions = () => {
+    const filterKinds: SelectItem[] = [];
+    filterKinds.push({ label: t("scm-trace-monitor-plugin.tableActions.all"), value: "ALL" });
+    kinds.forEach(kind => filterKinds.push({ label: kind, value: kind }));
+    return filterKinds;
   };
 
   return (
@@ -93,8 +93,8 @@ const TraceMonitorTableActions: FC<Props> = ({
       </div>
       <FlexNoneColumn className="column is-centered is-flex">
         <Level>
-          <span className="mr-2">{t("scm-trace-monitor-plugin.tableActions.categoryFilter")}</span>
-          <Select value={categoryFilter} options={createCategoryFilterOptions()} onChange={changeCategoryFilter} />
+          <span className="mr-2">{t("scm-trace-monitor-plugin.tableActions.kindFilter")}</span>
+          <Select value={kindFilter} options={createKindFilterOptions()} onChange={changeKindFilter} />
         </Level>
       </FlexNoneColumn>
       <FlexColumn className="column is-flex is-flex-grow-0">

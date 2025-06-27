@@ -20,6 +20,7 @@ import { useTranslation } from "react-i18next";
 
 export type Configuration = {
   storeSize: number;
+  cleanupExpression: string;
 };
 
 type Props = {
@@ -31,23 +32,37 @@ type Props = {
 const GlobalTraceMonitorConfigurationForm: FC<Props> = ({ initialConfiguration, readOnly, onConfigurationChange }) => {
   const [t] = useTranslation("plugins");
   const [storeSize, setStoreSize] = useState<number>(initialConfiguration.storeSize);
+  const [cleanupExpression, setCleanupExpression] = useState<string>(initialConfiguration.cleanupExpression);
 
   useEffect(() => {
-    onConfigurationChange({ storeSize }, isValidConfig());
-  }, [storeSize]);
+    onConfigurationChange({ storeSize, cleanupExpression }, isValidConfig());
+  }, [storeSize, cleanupExpression]);
 
   const isValidConfig = () => {
-    return storeSize !== initialConfiguration.storeSize && storeSize > 0;
+    return (
+      (storeSize !== initialConfiguration.storeSize ||
+      cleanupExpression !== initialConfiguration.cleanupExpression) &&
+      storeSize > 0 &&
+      cleanupExpression.length > 0
+    );
   };
+
   return (
     <>
       <InputField
         label={t("scm-trace-monitor-plugin.config.form.storeSize")}
-        onChange={size => setStoreSize(parseInt(size))}
+        onChange={(size) => setStoreSize(parseInt(size))}
         type="number"
         value={storeSize.toString()}
         disabled={readOnly}
         helpText={t("scm-trace-monitor-plugin.config.form.storeSizeHelpText")}
+      />
+      <InputField
+        label={t("scm-trace-monitor-plugin.config.form.cleanupExpression")}
+        onChange={setCleanupExpression}
+        value={cleanupExpression}
+        disabled={readOnly}
+        helpText={t("scm-trace-monitor-plugin.config.form.cleanupExpressionHelpText")}
       />
     </>
   );

@@ -28,8 +28,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.event.ScmEventBus;
-import sonia.scm.store.InMemoryDataStore;
-import sonia.scm.store.InMemoryDataStoreFactory;
+import sonia.scm.store.QueryableStoreExtension;
 import sonia.scm.trace.SpanContext;
 
 import java.time.Instant;
@@ -40,7 +39,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, QueryableStoreExtension.class})
+@QueryableStoreExtension.QueryableTypes(SpanContextStoreWrapper.class)
 class TraceExporterTest {
 
   @Mock
@@ -53,11 +53,9 @@ class TraceExporterTest {
   private TraceExporter traceExporter;
 
   @BeforeEach
-  void initStore() {
+  void initStore(SpanContextStoreWrapperStoreFactory queryableStoreFactory) {
     ThreadContext.bind(subject);
-    InMemoryDataStore<TraceStore.StoreEntry> dataStore = new InMemoryDataStore<>();
-    InMemoryDataStoreFactory factory = new InMemoryDataStoreFactory(dataStore);
-    store = new TraceStore(factory, globalConfigStore);
+    store = new TraceStore(queryableStoreFactory, globalConfigStore);
     traceExporter = new TraceExporter(store, eventBus);
   }
 
@@ -68,7 +66,7 @@ class TraceExporterTest {
 
   @Test
   void shouldAddSpanToStore() {
-    when(globalConfigStore.get()).thenReturn(new GlobalConfig(42));
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(42, null));
 
     traceExporter.export(createSpanContext(false));
 
@@ -87,8 +85,6 @@ class TraceExporterTest {
 
   @Test
   void shouldFireRequestFailedEvent() {
-    when(globalConfigStore.get()).thenReturn(new GlobalConfig(42));
-
     traceExporter.export(createSpanContext(true));
 
     verify(eventBus).post(any(RequestFailedEvent.class));
@@ -96,8 +92,6 @@ class TraceExporterTest {
 
   @Test
   void shouldNotFireRequestFailedEvent() {
-    when(globalConfigStore.get()).thenReturn(new GlobalConfig(42));
-
     traceExporter.export(createSpanContext(false));
 
     verify(eventBus, never()).post(any(RequestFailedEvent.class));

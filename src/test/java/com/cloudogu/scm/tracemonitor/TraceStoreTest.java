@@ -28,8 +28,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import sonia.scm.store.InMemoryDataStore;
-import sonia.scm.store.InMemoryDataStoreFactory;
+import sonia.scm.store.QueryableMutableStore;
+import sonia.scm.store.QueryableStoreExtension;
 import sonia.scm.trace.SpanContext;
 
 import java.time.Instant;
@@ -40,7 +40,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, QueryableStoreExtension.class})
+@QueryableStoreExtension.QueryableTypes(SpanContextStoreWrapper.class)
 class TraceStoreTest {
   @Mock
   private Subject subject;
@@ -51,11 +52,9 @@ class TraceStoreTest {
   private TraceStore store;
 
   @BeforeEach
-  void initStore() {
+  void initStore(SpanContextStoreWrapperStoreFactory queryableStoreFactory) {
     ThreadContext.bind(subject);
-    InMemoryDataStore<TraceStore.StoreEntry> dataStore = new InMemoryDataStore<>();
-    InMemoryDataStoreFactory factory = new InMemoryDataStoreFactory(dataStore);
-    store = new TraceStore(factory, globalConfigStore);
+    store = new TraceStore(queryableStoreFactory, globalConfigStore);
   }
 
   @AfterEach
@@ -70,14 +69,14 @@ class TraceStoreTest {
   }
 
   @Test
-  void shouldNotGetSpansByCategoryIfNotPermitted() {
+  void shouldNotGetSpansByKindsIfNotPermitted() {
     doThrow(AuthorizationException.class).when(subject).checkPermission("traceMonitor:read");
     assertThrows(AuthorizationException.class, () -> store.get("Jenkins"));
   }
 
   @Test
   void shouldAddSpan() {
-    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100));
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100, null));
 
     SpanContext spanContext = addSpanContextToStore("Jenkins", false);
 
@@ -86,36 +85,42 @@ class TraceStoreTest {
   }
 
   @Test
-  void shouldNotFailWhenAddingSpanWithStorageError() {
-    when(globalConfigStore.get()).thenThrow(new RuntimeException("somethings wrong with the storage"));
-
-    addSpanContextToStore("Jenkins", false);
-
-    assertThat(store.get("Jenkins")).isEmpty();
-  }
-
-  @Test
   void shouldGetEmptyList() {
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100, null));
+
     Collection<SpanContext> spanContexts = store.getAll();
+
     assertThat(spanContexts).isEmpty();
   }
 
   @Test
   void shouldGetAllSpans() {
-    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100));
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100, null));
 
     addSpanContextToStore("Jenkins", false);
     addSpanContextToStore("Redmine", true);
 
     Collection<SpanContext> storedSpans = store.getAll();
     assertThat(storedSpans).hasSize(2);
-    assertThat(storedSpans.stream().anyMatch(s -> s.getKind().equalsIgnoreCase("Jenkins"))).isTrue();
-    assertThat(storedSpans.stream().anyMatch(s -> s.getKind().equalsIgnoreCase("Redmine"))).isTrue();
+    assertThat(storedSpans)
+      .extracting("kind")
+      .containsExactlyInAnyOrder("Jenkins", "Redmine");
+  }
+
+  @Test
+  void shouldGetAllKinds() {
+    addSpanContextToStore("Jenkins", false);
+    addSpanContextToStore("Redmine", true);
+
+    Collection<String> storedSpans = store.getKinds();
+    assertThat(storedSpans)
+      .hasSize(2)
+      .containsExactlyInAnyOrder("Jenkins", "Redmine");
   }
 
   @Test
   void shouldGetSpansForKindOnly() {
-    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100));
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100, null));
 
     addSpanContextToStore("Jenkins", false);
     addSpanContextToStore("Jenkins", true);
@@ -128,8 +133,8 @@ class TraceStoreTest {
   }
 
   @Test
-  void shouldOnlyStoreLimitedAmountOfSpans() {
-    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100));
+  void shouldOnlyReturnStoreLimitedAmountOfSpans() {
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100, null));
 
     for (int i = 0; i < 1000; i++) {
       addSpanContextToStore("Jenkins", i, false);
@@ -144,7 +149,7 @@ class TraceStoreTest {
 
   @Test
   void shouldStoreMaxAmountPerKind() {
-    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100));
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100, null));
 
     for (int i = 0; i < 100; i++) {
       addSpanContextToStore("Jenkins", i, false);
@@ -155,12 +160,12 @@ class TraceStoreTest {
     }
 
     Collection<SpanContext> spans = store.getAll();
-    assertThat(spans).hasSize(200);
+    assertThat(spans).hasSize(100);
   }
 
   @Test
-  void shouldRemoveOldestEntriesFirstOnResizeStore() {
-    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100));
+  void shouldHeedLimitAfterStoreSizeChanged() {
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(100, null));
 
     for (int i = 0; i < 100; i++) {
       addSpanContextToStore("Jenkins", i, false);
@@ -170,7 +175,7 @@ class TraceStoreTest {
       addSpanContextToStore("Redmine", i, false);
     }
 
-    when(globalConfigStore.get()).thenReturn(new GlobalConfig(20));
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(20, null));
 
     addSpanContextToStore("Jenkins", 300, false);
 
@@ -178,9 +183,24 @@ class TraceStoreTest {
     Collection<SpanContext> redmineSpans = store.get("Redmine");
 
     assertThat(jenkinsSpans).hasSize(20);
-    assertThat(redmineSpans).hasSize(100);
+    assertThat(redmineSpans).hasSize(20);
 
     assertThat(jenkinsSpans.stream().allMatch(s -> s.getOpened().isAfter(Instant.ofEpochMilli(80)))).isTrue();
+  }
+
+  @Test
+  void shouldCleanUpStore(SpanContextStoreWrapperStoreFactory storeFactory) {
+    for (int i = 0; i < 10; i++) {
+      addSpanContextToStore("Jenkins", i, false);
+    }
+
+    when(globalConfigStore.get()).thenReturn(new GlobalConfig(5, null));
+
+    store.cleanUp();
+
+    try (QueryableMutableStore<SpanContextStoreWrapper> queryableMutableStore = storeFactory.getMutable("Jenkins")) {
+      assertThat(queryableMutableStore.query().count()).isEqualTo(5);
+    }
   }
 
   private SpanContext addSpanContextToStore(String kind, long opened, boolean failed) {

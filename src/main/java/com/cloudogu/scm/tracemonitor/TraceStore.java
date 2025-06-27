@@ -17,41 +17,25 @@
 package com.cloudogu.scm.tracemonitor;
 
 import com.cloudogu.scm.tracemonitor.config.GlobalConfigStore;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.util.concurrent.Striped;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.SecurityUtils;
-import sonia.scm.store.DataStore;
-import sonia.scm.store.DataStoreFactory;
-import sonia.scm.trace.SpanContext;
-
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import sonia.scm.store.QueryableMutableStore;
+import sonia.scm.store.QueryableStore;
+import sonia.scm.trace.SpanContext;
+
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.function.Supplier;
 
 @Slf4j
 @Singleton
 public class TraceStore {
 
-  private static final String STORE_NAME = "trace-monitor";
-  private final DataStoreFactory storeFactory;
+  private final SpanContextStoreWrapperStoreFactory storeFactory;
   private final GlobalConfigStore globalConfigStore;
-  private final Striped<ReadWriteLock> locks = Striped.readWriteLock(10);
 
   @Inject
-  public TraceStore(DataStoreFactory storeFactory, GlobalConfigStore globalConfigStore) {
+  public TraceStore(SpanContextStoreWrapperStoreFactory storeFactory, GlobalConfigStore globalConfigStore) {
     this.storeFactory = storeFactory;
     this.globalConfigStore = globalConfigStore;
   }
@@ -59,83 +43,62 @@ public class TraceStore {
   public Collection<SpanContext> getAll() {
     SecurityUtils.getSubject().checkPermission("traceMonitor:read");
     log.debug("reading all spans");
-    List<SpanContext> spans = new ArrayList<>();
-    createStore()
-      .getAll()
-      .values()
-      .forEach(entry -> spans.addAll(entry.getSpans()));
-    return spans;
+    try (QueryableStore<SpanContextStoreWrapper> store = storeFactory.getOverall()) {
+      return store
+        .query()
+        .orderBy(SpanContextStoreWrapperQueryFields.INTERNAL_ID, QueryableStore.Order.DESC)
+        .findAll(0, globalConfigStore.get().getStoreSize())
+        .stream()
+        .map(SpanContextStoreWrapper::getSpanContext)
+        .toList();
+    }
+  }
+
+  public Collection<String> getKinds() {
+    log.debug("reading all kinds of spans");
+    try (QueryableStore<SpanContextStoreWrapper> store = storeFactory.getOverall()) {
+      return store
+        .query()
+        .project(SpanContextStoreWrapperQueryFields.SPANCONTEXTKIND_ID)
+        .distinct()
+        .findAll()
+        .stream()
+        .map(row -> row[0].toString())
+        .sorted()
+        .toList();
+    }
+  }
+
+  public void cleanUp() {
+    log.debug("cleaning up span stores");
+    getKinds()
+      .forEach(kind -> {
+        try (QueryableMutableStore<SpanContextStoreWrapper> store = storeFactory.getMutable(kind)) {
+          store.query()
+            .orderBy(SpanContextStoreWrapperQueryFields.SPANCONTEXTKIND_ID, QueryableStore.Order.DESC)
+            .retain(globalConfigStore.get().getStoreSize());
+        }
+      });
   }
 
   public Collection<SpanContext> get(String kind) {
     SecurityUtils.getSubject().checkPermission("traceMonitor:read");
     log.debug("reading all spans for kind '{}'", kind);
-    return doSynchronized(
-      kind,
-      false,
-      () -> Collections.unmodifiableCollection(createStore().getOptional(kind).orElseGet(() -> new StoreEntry(1)).getSpans())
-    );
+    try (QueryableStore<SpanContextStoreWrapper> store = storeFactory.get(kind)) {
+      return store
+        .query()
+        .orderBy(SpanContextStoreWrapperQueryFields.INTERNAL_ID, QueryableStore.Order.DESC)
+        .findAll(0, globalConfigStore.get().getStoreSize())
+        .stream()
+        .map(SpanContextStoreWrapper::getSpanContext)
+        .toList();
+    }
   }
 
   synchronized void add(SpanContext spanContext) {
     log.debug("add span to store for kind '{}'", spanContext.getKind());
-    doSynchronized(spanContext.getKind(), true, () -> {
-      try {
-        DataStore<StoreEntry> store = createStore();
-        StoreEntry storeEntry = store.get(spanContext.getKind());
-        int configuredStoreSize = globalConfigStore.get().getStoreSize();
-        if (storeEntry == null) {
-          storeEntry = new StoreEntry(configuredStoreSize);
-        }
-        storeEntry = resizeStoreEntryMaxSize(storeEntry, configuredStoreSize);
-        storeEntry.getSpans().add(spanContext);
-        store.put(spanContext.getKind(), storeEntry);
-      } catch (Exception e) {
-        log.error("failed to write span to store for kind '{}'", spanContext.getKind(), e);
-      }
-      return null;
-    });
-  }
-
-  private StoreEntry resizeStoreEntryMaxSize(StoreEntry storeEntry, int configuredStoreSize) {
-    if (storeEntry.getSpans().maxSize != configuredStoreSize) {
-      if (configuredStoreSize > storeEntry.getSpans().maxSize) {
-        storeEntry.getSpans().maxSize = configuredStoreSize;
-      } else {
-        StoreEntry resizedStoreEntry = new StoreEntry(configuredStoreSize);
-        storeEntry.getSpans().forEach(s -> resizedStoreEntry.getSpans().add(s));
-        storeEntry = resizedStoreEntry;
-      }
-    }
-    return storeEntry;
-  }
-
-  private <T> T doSynchronized(String category, boolean write, Supplier<T> callback) {
-    final ReadWriteLock lockFactory = locks.get(category);
-    Lock lock = write ? lockFactory.writeLock() : lockFactory.readLock();
-    lock.lock();
-    try {
-      return callback.get();
-    } finally {
-      lock.unlock();
-    }
-  }
-
-  private DataStore<StoreEntry> createStore() {
-    return storeFactory.withType(StoreEntry.class).withName(STORE_NAME).build();
-  }
-
-  @XmlRootElement
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @Getter
-  @NoArgsConstructor
-  public static class StoreEntry {
-    @XmlElement(name = "request")
-    private EvictingQueue<SpanContext> spans;
-
-    @VisibleForTesting
-    public StoreEntry(int storeSize) {
-      spans = EvictingQueue.create(storeSize);
+    try (QueryableMutableStore<SpanContextStoreWrapper> store = storeFactory.getMutable(spanContext.getKind())) {
+      store.put(new SpanContextStoreWrapper(spanContext));
     }
   }
 }

@@ -34,6 +34,8 @@ public class GlobalConfigDto extends HalRepresentation {
   @Min(1)
   private int storeSize;
 
+  private String cleanupExpression;
+
   @Override
   @SuppressWarnings("squid:S1185") // We want to have this method available in this package
   protected HalRepresentation add(Links links) {

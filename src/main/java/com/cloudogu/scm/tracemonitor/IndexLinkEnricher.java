@@ -57,11 +57,11 @@ public class IndexLinkEnricher implements HalEnricher {
         .href();
       appender.appendLink("traceMonitor", traceMonitorUrl);
 
-      String traceMonitorCategoriesUrl = new LinkBuilder(pathInfoStore.get().get(), TraceMonitorResource.class)
-        .method("getAvailableCategories")
+      String traceMonitorKindsUrl = new LinkBuilder(pathInfoStore.get().get(), TraceMonitorResource.class)
+        .method("getAvailableKinds")
         .parameters()
         .href();
-      appender.appendLink("traceMonitorCategories", traceMonitorCategoriesUrl);
+      appender.appendLink("traceMonitorKinds", traceMonitorKindsUrl);
     }
   }
 }

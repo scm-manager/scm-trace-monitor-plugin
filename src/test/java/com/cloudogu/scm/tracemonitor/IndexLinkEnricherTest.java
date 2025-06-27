@@ -86,6 +86,6 @@ class IndexLinkEnricherTest {
     enricher.enrich(context, appender);
 
     verify(appender).appendLink("traceMonitor", "/scm/v2/trace-monitor/");
-    verify(appender).appendLink("traceMonitorCategories", "/scm/v2/trace-monitor/available-categories");
+    verify(appender).appendLink("traceMonitorKinds", "/scm/v2/trace-monitor/available-kinds");
   }
 }

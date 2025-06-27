@@ -58,7 +58,7 @@ class GlobalConfigStoreTest {
 
   @Test
   void shouldUpdateConfig() {
-    store.update(new GlobalConfig(1337));
+    store.update(new GlobalConfig(1337, null));
 
     GlobalConfig globalConfig = store.get();
     assertThat(globalConfig.getStoreSize()).isEqualTo(1337);
@@ -68,7 +68,7 @@ class GlobalConfigStoreTest {
   void shouldNotUpdateConfigWithoutPermission() {
     doThrow(AuthorizationException.class).when(subject).checkPermission("configuration:write:traceMonitor");
 
-    GlobalConfig config = new GlobalConfig(1337);
+    GlobalConfig config = new GlobalConfig(1337, null);
     assertThrows(AuthorizationException.class, () -> store.update(config));
   }
 }

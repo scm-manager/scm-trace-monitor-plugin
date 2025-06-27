@@ -14,22 +14,22 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-package com.cloudogu.scm.tracemonitor.config;
+package com.cloudogu.scm.tracemonitor;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlRootElement;
+import sonia.scm.store.IdGenerator;
+import sonia.scm.store.QueryableType;
+import sonia.scm.trace.SpanContext;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "trace-monitor-configuration")
-public class GlobalConfig {
-  private int storeSize = 100;
-  private String cleanupExpression = "0 0 2 * * ?"; // Every day at 2:00 AM
+@AllArgsConstructor
+@QueryableType(idGenerator = IdGenerator.AUTO_INCREMENT, value = SpanContextKind.class)
+public class SpanContextStoreWrapper {
+  private SpanContext spanContext;
+}
+
+class SpanContextKind {
 }

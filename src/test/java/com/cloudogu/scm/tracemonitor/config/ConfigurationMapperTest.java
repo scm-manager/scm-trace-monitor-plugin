@@ -58,7 +58,7 @@ class ConfigurationMapperTest {
   void shouldMapToDto() {
     when(subject.isPermitted("configuration:write:traceMonitor")).thenReturn(false);
     when(scmPathInfoStore.get()).thenReturn(() -> URI.create("/scm"));
-    GlobalConfigDto dto = mapper.map(new GlobalConfig(1000));
+    GlobalConfigDto dto = mapper.map(new GlobalConfig(1000, null));
 
     assertThat(dto.getStoreSize()).isEqualTo(1000);
     assertThat(dto.getLinks().getLinkBy("self").get().getHref()).isEqualTo("/v2/config/trace-monitor/");
@@ -69,7 +69,7 @@ class ConfigurationMapperTest {
   void shouldMapToDtoWithUpdateLink() {
     when(subject.isPermitted("configuration:write:traceMonitor")).thenReturn(true);
     when(scmPathInfoStore.get()).thenReturn(() -> URI.create("/scm"));
-    GlobalConfigDto dto = mapper.map(new GlobalConfig(1000));
+    GlobalConfigDto dto = mapper.map(new GlobalConfig(1000, null));
 
     assertThat(dto.getStoreSize()).isEqualTo(1000);
     assertThat(dto.getLinks().getLinkBy("self").get().getHref()).isEqualTo("/v2/config/trace-monitor/");

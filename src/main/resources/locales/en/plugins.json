@@ -10,8 +10,10 @@
     },
     "config": {
       "form": {
-        "storeSize": "Amount of stored requests per category",
-        "storeSizeHelpText": "Defines how many requests will be stored per category. \nBe careful: Increasing the store size too much could cause high memory usage."
+        "storeSize": "Amount of requests per category taken into account",
+        "storeSizeHelpText": "Defines how many requests will be taken into account per category. More requests will be ignored and removed periodically by the cleanup job and at start-up",
+        "cleanupExpression": "Cleanup Cron expression",
+        "cleanupExpressionHelpText": "Sets the cron expression for the cleanup job that removes old requests from the store. \nThe default value is \"0 0 2 * * ?\", which means it runs every day at 2 AM."
       }
     },
     "table": {
@@ -28,7 +30,7 @@
     },
     "tableActions": {
       "statusFilter": "Show only failed requests",
-      "categoryFilter": "Category Filter",
+      "kindFilter": "Category Filter",
       "labelFilter": "Label Filter",
       "labelFilterHelp": "The search filter refers to the labels specified on the stored requests shown in the \"Show details\", e.g. URL, method name, exceptions or a message. Which labels are set on a request depends on the category and the implementation of the request.",
       "all": "All"
@@ -39,7 +41,7 @@
     "landingpage": {
       "requestFailed": {
         "header": "Request failed",
-        "category": "Category: {{kind}}"
+        "kind": "Category: {{kind}}"
       }
     }
   },

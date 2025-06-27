@@ -16,6 +16,7 @@
 
 package com.cloudogu.scm.tracemonitor.config;
 
+import com.cloudogu.scm.tracemonitor.Cleanup;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -53,6 +54,9 @@ class GlobalConfigResourceTest {
   @Mock
   private ConfigurationMapper mapper;
 
+  @Mock
+  private Cleanup cleanup;
+
   @InjectMocks
   private GlobalConfigResource resource;
 
@@ -83,9 +87,9 @@ class GlobalConfigResourceTest {
 
   @Test
   void shouldGetConfig() throws URISyntaxException, UnsupportedEncodingException {
-    GlobalConfig globalConfig = new GlobalConfig(42);
+    GlobalConfig globalConfig = new GlobalConfig(42, null);
     when(store.get()).thenReturn(globalConfig);
-    when(mapper.map(globalConfig)).thenReturn(new GlobalConfigDto(42));
+    when(mapper.map(globalConfig)).thenReturn(new GlobalConfigDto(42, "0 0 2 * * ?"));
 
     MockHttpRequest request = MockHttpRequest.get("/" + GlobalConfigResource.TRACE_MONITOR_CONFIG_PATH_V2);
     MockHttpResponse response = new MockHttpResponse();
@@ -98,8 +102,8 @@ class GlobalConfigResourceTest {
 
   @Test
   void shouldUpdateConfig() throws URISyntaxException {
-    GlobalConfig globalConfig = new GlobalConfig(42);
-    when(mapper.map(new GlobalConfigDto(42))).thenReturn(globalConfig);
+    GlobalConfig globalConfig = new GlobalConfig(42, "0 0 2 * * ?");
+    when(mapper.map(new GlobalConfigDto(42, "0 0 2 * * ?"))).thenReturn(globalConfig);
     MockHttpRequest request = MockHttpRequest.put("/" + GlobalConfigResource.TRACE_MONITOR_CONFIG_PATH_V2)
       .contentType(MEDIA_TYPE)
       .content("{\"storeSize\":42}".getBytes());
@@ -111,6 +115,7 @@ class GlobalConfigResourceTest {
 
     verify(mapper).map(any(GlobalConfigDto.class));
     verify(store).update(globalConfig);
+    verify(cleanup).reSchedule();
   }
 
   @Test

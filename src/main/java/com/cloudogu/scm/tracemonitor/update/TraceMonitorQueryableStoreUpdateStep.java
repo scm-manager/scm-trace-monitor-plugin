@@ -29,54 +29,43 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import sonia.scm.migration.UpdateStep;
 import sonia.scm.plugin.Extension;
-import sonia.scm.store.ConfigurationEntryStore;
-import sonia.scm.store.ConfigurationEntryStoreFactory;
-import sonia.scm.store.QueryableMutableStore;
+import sonia.scm.store.DataStoreFactory;
 import sonia.scm.trace.SpanContext;
 import sonia.scm.version.Version;
 
-import java.util.Map;
-
-import static sonia.scm.version.Version.parse;
-
 @Extension
-class TraceMonitorStoreUpdateStep implements UpdateStep {
+class TraceMonitorQueryableStoreUpdateStep implements UpdateStep {
 
   private static final String STORE_NAME = "trace-monitor";
   private final SpanContextStoreWrapperStoreFactory queryableStoreFactory;
-  private final ConfigurationEntryStoreFactory configurationEntryStoreFactory;
+  private final DataStoreFactory dataStoreFactory;
 
   @Inject
-  public TraceMonitorStoreUpdateStep(SpanContextStoreWrapperStoreFactory queryableStoreFactory, ConfigurationEntryStoreFactory configurationEntryStoreFactory) {
+  TraceMonitorQueryableStoreUpdateStep(SpanContextStoreWrapperStoreFactory queryableStoreFactory, DataStoreFactory dataStoreFactory) {
     this.queryableStoreFactory = queryableStoreFactory;
-    this.configurationEntryStoreFactory = configurationEntryStoreFactory;
+    this.dataStoreFactory = dataStoreFactory;
   }
 
   @Override
   public void doUpdate() {
-    ConfigurationEntryStore<LegacyStoreEntry> configurationEntryStore = configurationEntryStoreFactory
-      .withType(LegacyStoreEntry.class)
-      .withName(STORE_NAME)
-      .build();
-    Map<String, LegacyStoreEntry> spans = configurationEntryStore.getAll();
-
-    spans.forEach((kind, legacyStoreEntry) -> {
-      try (QueryableMutableStore<SpanContextStoreWrapper> dataStore = queryableStoreFactory.getMutable(kind)) {
-        dataStore.transactional(() -> {
-          legacyStoreEntry.getSpans().forEach(spanContext -> {
-            SpanContextStoreWrapper wrapper = new SpanContextStoreWrapper(spanContext);
-            dataStore.put(wrapper);
+    dataStoreFactory.withType(LegacyStoreEntry.class).withName(STORE_NAME).build()
+      .getAll()
+      .forEach((kind, legacyStoreEntry) -> {
+        try (var dataStore = queryableStoreFactory.getMutable(kind)) {
+          dataStore.transactional(() -> {
+            legacyStoreEntry.getSpans().forEach(spanContext -> {
+              SpanContextStoreWrapper wrapper = new SpanContextStoreWrapper(spanContext);
+              dataStore.put(wrapper);
+            });
+            return true;
           });
-          return true;
-        });
-      }
-    });
-    configurationEntryStore.clear();
+        }
+      });
   }
 
   @Override
   public Version getTargetVersion() {
-    return parse("2.9.0");
+    return Version.parse("3.0.0");
   }
 
   @Override
@@ -84,7 +73,7 @@ class TraceMonitorStoreUpdateStep implements UpdateStep {
     return "sonia.scm.plugin.tracemonitor";
   }
 
-  @XmlRootElement
+  @XmlRootElement(name = "storeEntry")
   @XmlAccessorType(XmlAccessType.FIELD)
   @Getter
   @NoArgsConstructor

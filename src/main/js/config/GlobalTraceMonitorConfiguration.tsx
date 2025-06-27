@@ -29,7 +29,7 @@ const GlobalTraceMonitorConfiguration: FC<Props> = ({ link }) => {
   return (
     <>
       <Title title={t("scm-trace-monitor-plugin.global.title")} />
-      <Configuration link={link} t={t} render={props => <GlobalTraceMonitorConfigurationForm {...props} />} />
+      <Configuration link={link} render={(props) => <GlobalTraceMonitorConfigurationForm {...props} />} />
     </>
   );
 };
