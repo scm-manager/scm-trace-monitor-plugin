@@ -15,7 +15,7 @@
  */
 
 import { apiClient } from "@scm-manager/ui-components";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ApiResult, useRequiredIndexLink } from "@scm-manager/ui-api";
 import { PagedCollection, HalRepresentation } from "@scm-manager/ui-types";
 
@@ -48,7 +48,9 @@ export const useTraceMonitor = (
   labelFilter: string
 ): ApiResult<TraceMonitor> => {
   const indexLink = useRequiredIndexLink("traceMonitor");
-  return useQuery<TraceMonitor, Error>(["traceMonitor", page, kindFilter, onlyFailedFilter, labelFilter], () => {
+  return useQuery<TraceMonitor, Error>({ queryKey: ["traceMonitor", page, kindFilter, onlyFailedFilter, labelFilter
+],
+  queryFn:() => {
     let link = indexLink + `?page=${page}&labelFilter=${labelFilter}`;
     if (kindFilter && kindFilter !== "ALL") {
       link += `&kind=${kindFilter}`;
@@ -57,19 +59,24 @@ export const useTraceMonitor = (
       link += "&onlyFailed=true";
     }
     return apiClient.get(link).then(response => response.json());
-  });
+  }
+});
 };
 
 export const useTraceMonitorKinds = (): ApiResult<TraceMonitorKinds> => {
   const indexLink = useRequiredIndexLink("traceMonitorKinds");
-  return useQuery<TraceMonitorKinds, Error>(["traceMonitorKinds"], () => {
+  return useQuery<TraceMonitorKinds, Error>({ queryKey: ["traceMonitorKinds"], queryFn: () =>
+  {
     return apiClient.get(indexLink).then(response => response.json());
-  });
+  }
+});
 };
 
 export const useTraceMonitorConfig = (): ApiResult<TraceMonitorConfig> => {
   const indexLink = useRequiredIndexLink("traceMonitorConfig");
-  return useQuery<TraceMonitorConfig, Error>(["traceMonitorConfig"], () => {
+  return useQuery<TraceMonitorConfig, Error>({ queryKey: ["traceMonitorConfig"], queryFn: () =>
+  {
     return apiClient.get(indexLink).then(response => response.json());
-  });
+  }
+});
 };

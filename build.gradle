@@ -19,11 +19,11 @@ plugins {
 }
 
 dependencies {
-  optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:3.0.0"
+  optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:4.0.0-SNAPSHOT"
 }
 
 scmPlugin {
-  scmVersion = "3.9.0"
+  scmVersion = "4.0.0-SNAPSHOT"
   displayName = "Trace Monitor"
   description = "Traces requests outgoing from SCM-Manager"
   author = "Sebastian Sdorra"

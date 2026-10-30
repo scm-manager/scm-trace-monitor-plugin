@@ -16,7 +16,8 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { CardColumnSmall, DateFromNow, Icon } from "@scm-manager/ui-components";
+import { CardColumnSmall, Icon } from "@scm-manager/ui-components";
+import { DateFromNow } from "@scm-manager/ui-core";
 
 const RequestFailedEvent = ({ event }) => {
   const [t] = useTranslation("plugins");

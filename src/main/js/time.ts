@@ -14,7 +14,7 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import { Span } from "./TraceMonitor";
+import { Span } from "./useTraceMonitor";
 import { format } from "date-fns";
 
 export const convertMillisToString = (ms: number) => {

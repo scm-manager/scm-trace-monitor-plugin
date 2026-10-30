@@ -17,25 +17,18 @@
 import React, { FC } from "react";
 import { SecondaryNavigationItem } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
-import { useRouteMatch } from "react-router-dom";
+
 
 const TraceMonitorNavigation: FC = () => {
   const [t] = useTranslation("plugins");
-  const match = useRouteMatch();
 
-  const matchesTraceMonitor = (route: any) => {
-    const regex = new RegExp("/admin/trace-monitor/.+");
-    return !!route.location.pathname.match(regex);
-  };
 
   return (
     <SecondaryNavigationItem
-      to={match.url + "/trace-monitor/"}
+      to={"/admin/trace-monitor"}
       icon="fas fa-desktop"
       label={t("scm-trace-monitor-plugin.navLink")}
       title={t("scm-trace-monitor-plugin.navLink")}
-      activeWhenMatch={matchesTraceMonitor}
-      activeOnlyWhenExact={false}
     />
   );
 };

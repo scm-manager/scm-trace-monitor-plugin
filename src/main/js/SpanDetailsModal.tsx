@@ -15,7 +15,7 @@
  */
 
 import React, { FC } from "react";
-import { Span } from "./TraceMonitor";
+import { Span } from "./useTraceMonitor";
 import { Modal, Icon } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import { convertMillisToString, formatAsTimestamp } from "./time";

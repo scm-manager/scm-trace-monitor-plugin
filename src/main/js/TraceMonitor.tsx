@@ -16,13 +16,13 @@
 
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Redirect, useRouteMatch } from "react-router-dom";
-import { Links } from "@scm-manager/ui-types";
+import { useMatch} from "react-router-dom";
 import { ErrorNotification, LinkPaginator, Loading, Subtitle, Title, urls } from "@scm-manager/ui-components";
 import TraceMonitorTable from "./TraceMonitorTable";
 import { useTraceMonitor, useTraceMonitorKinds } from "./useTraceMonitor";
 import TraceMonitorTableActions from "./TraceMonitorTableActions";
 import { useDocumentTitle } from "@scm-manager/ui-core";
+import { Navigate } from "react-router";
 
 const usePrevious = <T,>(value: T) => {
   const ref = useRef(value);
@@ -34,10 +34,9 @@ const usePrevious = <T,>(value: T) => {
   return ref.current;
 };
 
-const TraceMonitor: FC<{ links: Links }> = () => {
+const TraceMonitor: FC = () => {
   const [t] = useTranslation("plugins");
-
-  const match = useRouteMatch();
+  const match = useMatch("/admin/trace-monitor//*");
   const page = urls.getPageFromMatch(match);
 
   const [kindFilter, setKindFilter] = useState("ALL");
@@ -88,7 +87,7 @@ const TraceMonitor: FC<{ links: Links }> = () => {
   }, [redirectToFirstPage]);
 
   if (redirectToFirstPage || (data && data.pageTotal < page && page > 1)) {
-    return <Redirect to={"/admin/trace-monitor/1"} />;
+    return <Navigate to={"/admin/trace-monitor/1"} />;
   }
 
   if (error || kindsError) {
@@ -115,7 +114,7 @@ const TraceMonitor: FC<{ links: Links }> = () => {
       />
       <TraceMonitorTable spans={data.spans} />
       <hr />
-      <LinkPaginator collection={data} page={page} />
+      <LinkPaginator collection={data} page={page}  baseUrl="/admin/trace-monitor/"/>
     </>
   );
 };
