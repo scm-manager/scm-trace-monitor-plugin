@@ -17,7 +17,8 @@
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
-import { Column, comparators, Icon, NoStyleButton, Table, TextColumn } from "@scm-manager/ui-components";
+import { Icon, NoStyleButton } from "@scm-manager/ui-components";
+import { comparators, Table } from "@scm-manager/ui-core";
 import { Span } from "./useTraceMonitor";
 import SpanDetailsModal from "./SpanDetailsModal";
 import { convertMillisToString, formatAsTimestamp } from "./time";
@@ -45,8 +46,8 @@ const TraceMonitorTable: FC<Props> = ({ spans }) => {
       {showModal && <SpanDetailsModal onClose={() => setShowModal(false)} modalData={modalData} active={showModal} />}
       <ScrollableViewport>
         <Table data={spans} emptyMessage={t("scm-trace-monitor-plugin.table.emptyMessage")}>
-          <TextColumn header={t("scm-trace-monitor-plugin.table.column.kind")} dataKey="kind" />
-          <Column
+          <Table.TextColumn header={t("scm-trace-monitor-plugin.table.column.kind")} dataKey="kind" />
+          <Table.Column
             header={t("scm-trace-monitor-plugin.table.column.status")}
             createComparator={() => comparators.byKey("failed")}
             ascendingIcon="sort"
@@ -65,30 +66,30 @@ const TraceMonitorTable: FC<Props> = ({ spans }) => {
                 </>
               )
             }
-          </Column>
-          <Column
+          </Table.Column>
+          <Table.Column
             header={t("scm-trace-monitor-plugin.table.column.timestamp")}
             createComparator={() => comparators.byKey("opened")}
             ascendingIcon="sort"
             descendingIcon="sort"
           >
             {row => formatAsTimestamp(row)}
-          </Column>
-          <Column
+          </Table.Column>
+          <Table.Column
             header={t("scm-trace-monitor-plugin.table.column.duration")}
             createComparator={() => comparators.byKey("durationInMillis")}
             ascendingIcon="sort"
             descendingIcon="sort"
           >
             {row => convertMillisToString(row.durationInMillis)}
-          </Column>
-          <Column header="">
+          </Table.Column>
+          <Table.Column header="">
             {row => (
               <NoStyleButton className={"has-text-info is-hovered"} onClick={() => openModal(row)}>
                 {t("scm-trace-monitor-plugin.table.details")}
               </NoStyleButton>
             )}
-          </Column>
+          </Table.Column>
         </Table>
       </ScrollableViewport>
     </>
